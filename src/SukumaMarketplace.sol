@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-// import "@openzeppelin/contracts/access/Ownable.sol";
-// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-// import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+// import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+// import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract SukumaMarketplace is Ownable, Initializable {
+
+contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     // Structs
     enum OfferType {Buy, Sell}
     enum OfferStatus {Open, Closed}
@@ -69,10 +68,11 @@ contract SukumaMarketplace is Ownable, Initializable {
     event TransferCreated(uint256 transferId);
     event AccountCreated(uint256 accountId);
 
-    // Constructor
-    constructor(address owner_) {
-        owner = owner_;
+     // Initializer - replaces the constructor when using the upgradeable pattern
+       function initialize() public initializer {
+        __Ownable_init();
     }
+
 
     // Modifier
     modifier onlyOwner() {
