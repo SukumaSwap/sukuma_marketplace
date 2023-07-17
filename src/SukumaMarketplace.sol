@@ -3,7 +3,8 @@ pragma solidity ^0.8.13;
 
 // import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 // import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
+// Importing OpenZeppelin's SafeMath for safe mathematical operations
+// import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     // Structs
