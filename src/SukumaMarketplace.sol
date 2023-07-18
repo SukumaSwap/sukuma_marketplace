@@ -93,6 +93,8 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         Account storage account = accounts[msg.sender];
         account.walletAddress = msg.sender;
         account.accountId = nextAccountId;
+         // Emit event
+        emit AccountCreated(msg.sender, nextAccountId);
     }
 
     function createOffer(Offer memory _offer) public returns (uint256) {
