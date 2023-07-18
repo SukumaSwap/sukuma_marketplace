@@ -71,7 +71,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     event OfferCreated(uint256 offerId);
     event TradeCreated(uint256 tradeId);
     event TransferCreated(uint256 transferId);
-    event AccountCreated(uint256 accountId);
+    event AccountCreated(address walletAddress, uint256 accountId);
 
      // Initializer - replaces the constructor when using the upgradeable pattern
        function initialize() public initializer {
