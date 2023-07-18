@@ -99,7 +99,12 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         nextAccountId = nextAccountId.add(1);
          return account.accountId;
     }
-
+  // Function to get account information
+    function getAccount(address walletAddress) public view returns (uint256 accountId, uint256 likes, uint256 dislikes, uint256 Blocks) {
+        Account storage account = accounts[walletAddress];
+        return (account.accountId, account.likes, account.dislikes, account.Blocks);
+    }
+    
     function createOffer(Offer memory _offer) public returns (uint256) {
         // implementation goes here
     }
