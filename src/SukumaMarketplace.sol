@@ -89,6 +89,10 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     function createAccount() public returns (uint256) {
          // Ensure account does not already exist
         require(accounts[msg.sender].walletAddress == address(0), "Account already exists");
+        // Create new account
+        Account storage account = accounts[msg.sender];
+        account.walletAddress = msg.sender;
+        account.accountId = nextAccountId;
     }
 
     function createOffer(Offer memory _offer) public returns (uint256) {
