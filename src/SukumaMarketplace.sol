@@ -61,7 +61,11 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => Trade) public trades;
     mapping(uint256 => Transfer) public transfers;
-    mapping(uint256 => Account) public accounts;
+    // mapping(uint256 => Account) public accounts; to be deleted
+
+     // Mapping of wallet address to Account
+    mapping(address => Account) private accounts;
+    uint256 private nextAccountId = 1; // Account ID starts at 1
 
     // Events
     event OfferCreated(uint256 offerId);
