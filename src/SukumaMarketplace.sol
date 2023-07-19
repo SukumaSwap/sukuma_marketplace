@@ -113,12 +113,41 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     
     // Variable to keep track of offerId
     uint256 public offerIdCounter;
-    function createOffer(Offer memory _offer) public returns (uint256) {
+    
+    function createOffer(address _token,
+        uint256 _quantity,
+        OfferType _offerType,
+        uint256 _min,
+        uint256 _max,
+        string memory _instructions,
+        uint256 _offerRate,
+        string[] memory _acceptedCurrency,
+        string[] memory _paymentMethods,
+        OfferStatus _offerStatus
+        ) public   {
         // implementation goes here
+         // incrementing the offerIdCounter for each new offer
+        offerIdCounter = offerIdCounter.add(1);
+         Offer memory newOffer = Offer({
+            offerId: offerIdCounter,
+            token: _token,
+            quantity: _quantity,
+            offerType: _offerType,
+            min: _min,
+            max: _max,
+            instructions: _instructions,
+            offerRate: _offerRate,
+            acceptedCurrency: _acceptedCurrency,
+            paymentMethods: _paymentMethods,
+            offerStatus: _offerStatus
+        });
+// Saving the offer in offers mapping
+        offers[offerIdCounter] = newOffer;
     }
 
     function createBuyTrade(Trade memory _trade) public returns (uint256) {
         // implementation goes here
+  
 
     }
 
