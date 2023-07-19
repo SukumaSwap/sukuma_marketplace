@@ -10,7 +10,7 @@ pragma solidity ^0.8.13;
 
 
     //necessary imports not yet installed
-// import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 // Importing OpenZeppelin's ERC20 interface
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -162,7 +162,17 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         require(tradingType == TradeType.Buy, "TradeType must be Buy");
 // Require that the offerId exists
         require(offers[orderId].offerId == orderId, "OfferId does not exist");
-
+// Create a new trade
+        Trade memory trade = Trade({
+            tradeId: tradeId,
+            orderId: orderId,
+            status: status,
+            quantity: quantity,
+            receiver: receiver,
+            sender: sender,
+            token: token,
+            tradingType: tradingType
+        });
     }
 
     function createSellTrade(Trade memory _trade) public returns (uint256) {
