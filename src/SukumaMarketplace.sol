@@ -173,6 +173,8 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
             token: token,
             tradingType: tradingType
         });
+         // Store the trade
+        trades[tradeId] = trade;
     }
 
     function createSellTrade(Trade memory _trade) public returns (uint256) {
