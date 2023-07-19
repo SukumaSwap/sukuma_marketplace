@@ -8,17 +8,21 @@ pragma solidity ^0.8.13;
 // Importing OpenZeppelin's SafeMath for safe mathematical operations
 // import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+
+    //necessary imports not yet installed
 import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 // Importing OpenZeppelin's ERC20 interface
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+// import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract SukumaMarketplace is Initializable, OwnableUpgradeable{
-    // Structs
+   //enums
     enum OfferType {Buy, Sell}
     enum OfferStatus {Open, Closed}
     enum TradeType {Buy, Sell}
     enum TradeStatus {Active, Disputed, Completed}
-
+ // Structs
     struct Offer {
         uint256 offerId;
         address token;
@@ -113,7 +117,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     
     // Variable to keep track of offerId
     uint256 public offerIdCounter;
-    
+
     function createOffer(address _token,
         uint256 _quantity,
         OfferType _offerType,
@@ -145,7 +149,14 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         offers[offerIdCounter] = newOffer;
     }
 
-    function createBuyTrade(Trade memory _trade) public returns (uint256) {
+    function createBuyTrade( uint256 tradeId,
+        uint256 orderId,
+        TradeStatus status,
+        uint256 quantity,
+        address receiver,
+        address sender,
+        address token,
+        TradeType tradingType) public {
         // implementation goes here
   
 
