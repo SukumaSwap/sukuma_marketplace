@@ -157,9 +157,12 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         address sender,
         address token,
         TradeType tradingType) public {
-        // implementation goes here
-  
-
+       
+    // Require that the tradingType is Buy
+        require(tradingType == TradeType.Buy, "TradeType must be Buy");
+// Require that the offerId exists
+        require(offers[orderId].offerId == orderId, "OfferId does not exist");
+        
     }
 
     function createSellTrade(Trade memory _trade) public returns (uint256) {
