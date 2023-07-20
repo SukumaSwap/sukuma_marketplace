@@ -147,8 +147,10 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 // Saving the offer in offers mapping
         offers[offerIdCounter] = newOffer;
     }
+//variable to count trades
+  uint256 public tradeCounter = 0;
 
-    function createBuyTrade( uint256 tradeId,
+    function createBuyTrade( 
         uint256 orderId,
         TradeStatus status,
         uint256 quantity,
@@ -162,6 +164,9 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         require(tradingType == TradeType.Buy, "TradeType must be Buy");
 // Require that the offerId exists
         require(offers[orderId].offerId == orderId, "OfferId does not exist");
+       // Autogenerate tradeId
+        tradeCounter++;
+        uint256 tradeId = tradeCounter; 
 // Create a new trade
         Trade memory trade = Trade({
             tradeId: tradeId,
