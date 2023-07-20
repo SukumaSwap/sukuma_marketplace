@@ -12,7 +12,7 @@ pragma solidity ^0.8.13;
     //necessary imports not yet installed
 import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 // Importing OpenZeppelin's ERC20 interface
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
 // import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -28,10 +28,10 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         address token;
         uint256 quantity;
         OfferType offerType;
-        uint256 Min;
-        uint256 Max;
+        uint256 min;
+        uint256 max;
         string instructions;
-        uint256 OfferRate;
+        uint256 offerRate;
         string[] acceptedCurrency;
         string[] paymentMethods;
         OfferStatus offerStatus;
@@ -41,11 +41,12 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         uint256 tradeId;
         uint256 orderId;
         TradeStatus status;
-        uint256 quantity;
+        uint256 quantity; // token amount
         address receiver;
         address sender;
         address token;
         TradeType tradingType;
+        uint64 amount;
     }
 
     struct Transfer {
@@ -58,7 +59,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 
     struct Account {
         address walletAddress;
-        uint256 accountId;
+        uint64 accountId;
         uint256 likes;
         uint256 dislikes;
         uint256 Blocks;
@@ -67,7 +68,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 
     // Variables
     uint256 public marketplaceFee;
-    address public owner;
+    // address public owner;
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => Trade) public trades;
     mapping(uint256 => Transfer) public transfers;
@@ -75,7 +76,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 
      // Mapping of wallet address to Account
     mapping(address => Account) private accounts;
-    uint256 private nextAccountId = 1; // Account ID starts at 1
+    uint64 private nextAccountId = 1; // Account ID starts at 1
 
     // Events
     event OfferCreated(uint256 offerId);
@@ -90,10 +91,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 
 
     // Modifier
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
-        _;
-    }
+   
 
     // Functions
     function createAccount() public returns (uint256) {
@@ -106,7 +104,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
          // Emit event
         emit AccountCreated(msg.sender, nextAccountId);
          // Increment next account ID
-        nextAccountId = nextAccountId.add(1);
+        nextAccountId = nextAccountId+ 1;
          return account.accountId;
     }
   // Function to get account information
@@ -131,7 +129,8 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         ) public   {
         // implementation goes here
          // incrementing the offerIdCounter for each new offer
-        offerIdCounter = offerIdCounter.add(1);
+        offerIdCounter = offerIdCounter+1;
+
          Offer memory newOffer = Offer({
             offerId: offerIdCounter,
             token: _token,
@@ -156,7 +155,8 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         address receiver,
         address sender,
         address token,
-        TradeType tradingType) public {
+        TradeType tradingType,
+        uint64 amount) public {
        
     // Require that the tradingType is Buy
         require(tradingType == TradeType.Buy, "TradeType must be Buy");
@@ -171,7 +171,8 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
             receiver: receiver,
             sender: sender,
             token: token,
-            tradingType: tradingType
+            tradingType: tradingType,
+            amount:amount
         });
          // Store the trade
         trades[tradeId] = trade;
