@@ -58,7 +58,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     }
 
     // Variables
-    uint256 public marketplaceFee;
+    uint256 private marketplaceFee;
     // address public owner;
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => Trade) public trades;
@@ -212,7 +212,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     function getMarketplaceFee() public view returns (uint256) {
         return marketplaceFee;
     }
-    
+
      // Function to set the marketplace fee, can only be called by the contract owner
     function setMarketplaceFee(uint256 _fee) public onlyOwner {
         marketplaceFee = _fee;
