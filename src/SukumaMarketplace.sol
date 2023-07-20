@@ -174,12 +174,47 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         trades[tradeId] = trade;
     }
 
-    function createSellTrade(Trade memory _trade) public returns (uint256) {
-        // implementation goes here
+    function createSellTrade(uint256 orderId,
+       
+        uint256 quantity,
+        address receiver,
+        address sender,
+        address token,
+        TradeType tradeType,
+        uint64 amount) public {
+       
+    // Require that the tradingType is Buy
+        require(tradeType == TradeType.Buy, "TradeType must be Buy");
+// Require that the offerId exists
+        require(offers[orderId].offerId == orderId, "OfferId does not exist");
+       // Autogenerate tradeId
+        tradeCounter++;
+        uint256 tradeId = tradeCounter; 
+// Create a new trade
+        Trade memory trade = Trade({
+            tradeId: tradeId,
+            orderId: orderId,
+            status: TradeStatus.Active,
+            quantity: quantity,
+            receiver: receiver,
+            sender: sender,
+            token: token,
+            tradeType: TradeType.Sell,
+            amount:amount
+        });
+         // Store the trade
+        trades[tradeId] = trade;
     }
 
-    function setmarketplaceFee(uint256 _fee) public onlyOwner {
-        // implementation goes here
+ // Event to emit when the marketplace fee is changed
+    event MarketplaceFeeChanged(uint256 newFee);
+
+     // Function to set the marketplace fee, can only be called by the contract owner
+    function setMarketplaceFee(uint256 _fee) public onlyOwner {
+        marketplaceFee = _fee;
+
+        // Emitting an event when the marketplace fee is changed
+        emit MarketplaceFeeChanged(_fee);
     }
 
     function deposit(address _token, uint256 _amount) public {
