@@ -1,14 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
-
-// import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/acess/OwnableUpgradable.sol";
-
-// import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-// Importing OpenZeppelin's SafeMath for safe mathematical operations
-// import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
-
     //necessary imports not yet installed
 import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 // Importing OpenZeppelin's ERC20 interface
@@ -45,7 +36,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         address receiver;
         address sender;
         address token;
-        TradeType tradingType;
+        TradeType tradeType;
         uint64 amount;
     }
 
@@ -157,11 +148,11 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         address receiver,
         address sender,
         address token,
-        TradeType tradingType,
+        TradeType tradeType,
         uint64 amount) public {
        
     // Require that the tradingType is Buy
-        require(tradingType == TradeType.Buy, "TradeType must be Buy");
+        require(tradeType == TradeType.Buy, "TradeType must be Buy");
 // Require that the offerId exists
         require(offers[orderId].offerId == orderId, "OfferId does not exist");
        // Autogenerate tradeId
@@ -176,7 +167,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
             receiver: receiver,
             sender: sender,
             token: token,
-            tradingType: tradingType,
+            tradeType: TradeType.Buy,
             amount:amount
         });
          // Store the trade
