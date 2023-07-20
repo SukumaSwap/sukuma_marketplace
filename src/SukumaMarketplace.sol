@@ -143,7 +143,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 
     function createBuyTrade( 
         uint256 orderId,
-        TradeStatus status,
+       
         uint256 quantity,
         address receiver,
         address sender,
@@ -162,7 +162,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         Trade memory trade = Trade({
             tradeId: tradeId,
             orderId: orderId,
-            status: status,
+            status: TradeStatus.Active,
             quantity: quantity,
             receiver: receiver,
             sender: sender,
