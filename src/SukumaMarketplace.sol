@@ -208,7 +208,11 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 
  // Event to emit when the marketplace fee is changed
     event MarketplaceFeeChanged(uint256 newFee);
-
+// Function to get the current marketplace fee
+    function getMarketplaceFee() public view returns (uint256) {
+        return marketplaceFee;
+    }
+    
      // Function to set the marketplace fee, can only be called by the contract owner
     function setMarketplaceFee(uint256 _fee) public onlyOwner {
         marketplaceFee = _fee;
