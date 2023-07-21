@@ -270,17 +270,21 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 // Define an event
 event CryptoReleased(uint256 indexed tradeId, address token, uint256 quantity, address receiver);
 
-    function releaseCrypto(address _token,uint256 _quantity, uint256 _tradeId, address _receiver, uint256 _balance) public {
-         require(_balance >= _quantity, "Insufficient balance");
-// IERC20(_token) allows the contract to interact with the ERC20 token at address _token
-        IERC20 token = IERC20(_token);
-        // Transfer the tokens
-        require(token.transfer(_receiver, _quantity), "Token transfer failed");
-        
-        // Update the balance
-        _balance -= _quantity;
+  function releaseCrypto(address _token, uint256 _quantity, uint256 _tradeId, address _receiver, uint256 _balance) public {
+    require(_balance >= _quantity, "Insufficient balance");
 
-    }
+    // IERC20(_token) allows the contract to interact with the ERC20 token at address _token
+    IERC20 token = IERC20(_token);
+
+    // Transfer the tokens
+    require(token.transfer(_receiver, _quantity), "Token transfer failed");
+
+    // Update the balance
+    _balance -= _quantity;
+
+    // Emit an event for the token release
+    emit CryptoReleased(_tradeId, _token, _quantity, _receiver);
+}
 
     function closeOffer(uint256 _offerId) public {
         // implementation goes here
