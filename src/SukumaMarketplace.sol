@@ -287,13 +287,15 @@ event CryptoReleased(uint256 indexed tradeId, address token, uint256 quantity, a
 }
 // Event to be emitted when an offer is closed
     event OfferClosed(uint256 offerId);
-    
+
     function closeOffer(uint256 _offerId) public {
-        // implementation goes here
+     // Checking if the offer exists
+        require(offers[_offerId].offerId == _offerId, "Offer does not exist");
+        
     }
 
     function like(uint256 _accountId) public {
-        // implementation goes here
+        
     }
 
     function dislike(uint256 _accountId) public {
