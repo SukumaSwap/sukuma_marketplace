@@ -285,7 +285,9 @@ event CryptoReleased(uint256 indexed tradeId, address token, uint256 quantity, a
     // Emit an event for the token release
     emit CryptoReleased(_tradeId, _token, _quantity, _receiver);
 }
-
+// Event to be emitted when an offer is closed
+    event OfferClosed(uint256 offerId);
+    
     function closeOffer(uint256 _offerId) public {
         // implementation goes here
     }
