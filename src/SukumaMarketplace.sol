@@ -249,9 +249,11 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
         emit Withdrawal(msg.sender, _token, quantity);
     }
 
-    function checkBalance(address _token) public view returns (uint256) {
-    
+   function checkBalance(address _account, address _token) external view returns (uint256) {
+        // Return the balance of the account
+         return accounts[_account].Balance[_token];
     }
+
 
     function transfer(address _token, uint256 _amount, address _to) public {
         // implementation goes here
