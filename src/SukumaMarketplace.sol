@@ -255,13 +255,16 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     }
 
 
-    function transfer(address _token, uint256 _amount, address _to) public {
-             // IERC20(_token) allows us to call methods from the ERC20 interface on _token
-        // transferFrom is a method in the ERC20 standard that allows a contract to transfer tokens on behalf of the user
-        // msg.sender is the address of the user who called this contract
-        // _to is the address we are sending tokens to
-        // _amount is the amount of tokens we are sending
-        require(IERC20(_token).transferFrom(msg.sender, _to, _amount), "Transfer failed");
+    function transfer(address _token, uint256 _quantity, address _to) public { 
+        require(_quantity > 0, "Transfer quantity must be greater than zero");
+         require(_to != address(0), "Receiver address cannot be zero address");
+
+        // IERC20(_token) allows the contract to interact with the ERC20 token at address _token
+        IERC20 token = IERC20(_token);
+
+        // Transfers _quantity amount of tokens to address _to
+        // The contract must have enough tokens for the transfer to succeed
+        token.transfer(_to, _quantity);
     }
 
     function releaseCrypto(uint256 _quantity, uint256 _tradeId, address _receiver, uint256 _balance) public {
