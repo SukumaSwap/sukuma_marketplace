@@ -291,7 +291,8 @@ event CryptoReleased(uint256 indexed tradeId, address token, uint256 quantity, a
     function closeOffer(uint256 _offerId) public {
      // Checking if the offer exists
         require(offers[_offerId].offerId == _offerId, "Offer does not exist");
-        
+          // Checking if the offer is not already closed
+        require(offers[_offerId].offerStatus != OfferStatus.Closed, "Offer is already closed");
     }
 
     function like(uint256 _accountId) public {
