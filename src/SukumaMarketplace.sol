@@ -242,6 +242,9 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     function checkBalance(address _token) public view returns (uint256) {
          // Ensure the user has enough tokens
         require(accounts[msg.sender].Balance[_token] >= _amount, "Insufficient balance");
+// Subtract the amount from the user's balance
+        accounts[msg.sender].Balance[_token] = accounts[msg.sender].Balance[_token].sub(_amount);
+
     }
 
     function transfer(address _token, uint256 _amount, address _to) public {
