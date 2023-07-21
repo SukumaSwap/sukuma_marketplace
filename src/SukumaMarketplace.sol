@@ -64,7 +64,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => Trade) public trades;
     mapping(uint256 => Transfer) public transfers;
-    // mapping(uint256 => Account) public accounts; to be deleted
+    // mapping(uint256 => Account) public accounts; //to be deleted
 
      // Mapping of wallet address to Account
     mapping(address => Account) private accounts;
@@ -235,19 +235,22 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 // This event will be emitted when a user withdraws tokens
     event Withdrawal(address indexed user, address indexed token, uint256 amount);
 
-    function withdraw(address _token, uint256 _amount) public {
-        // implementation goes here
+   function withdraw(address _token, uint256 quantity) public {
+        // Ensure the user has enough tokens
+        require(accounts[msg.sender].Balance[_token] >= quantity, "Insufficient balance");
+
+        // Subtract the amount from the user's balance
+        accounts[msg.sender].Balance[_token] =accounts[msg.sender].Balance[_token] -= quantity;
+
+        // Transfer the tokens from this contract to the user
+        IERC20(_token).transfer(msg.sender, quantity);
+
+        // Emit the withdrawal event
+        emit Withdrawal(msg.sender, _token, quantity);
     }
 
     function checkBalance(address _token) public view returns (uint256) {
-         // Ensure the user has enough tokens
-        require(accounts[msg.sender].Balance[_token] >= _amount, "Insufficient balance");
-// Subtract the amount from the user's balance
-        accounts[msg.sender].Balance[_token] = accounts[msg.sender].Balance[_token].sub(_amount);
-// Transfer the tokens from this contract to the user
-        IERC20(_token).transfer(msg.sender, _amount);
-        // Emit the withdrawal event
-        emit Withdrawal(msg.sender, _token, _amount);
+    
     }
 
     function transfer(address _token, uint256 _amount, address _to) public {
