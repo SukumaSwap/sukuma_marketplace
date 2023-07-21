@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
     //necessary imports not yet installed
-import "@openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 // Importing OpenZeppelin's ERC20 interface
-import "@openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
+
+import "openzeppelin/token/ERC20/ERC20.sol";
 // import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract SukumaMarketplace is Initializable, OwnableUpgradeable{
@@ -222,7 +223,13 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
     }
 
     function deposit(address _token, uint256 _amount) public {
-        // implementation goes here
+        // We use the ERC20 interface to interact with any ERC20 token
+        IERC20 token = IERC20(_token);
+        // Transfer the tokens to this contract
+        token.transferFrom(msg.sender, address(this), _amount);
+         // Update the account's balance
+        accounts[msg.sender].Balance[_token] += _amount;
+
     }
 
     function withdraw(address _token, uint256 _amount) public {
