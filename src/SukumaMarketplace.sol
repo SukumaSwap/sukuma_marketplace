@@ -232,6 +232,9 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
 
     }
 
+// This event will be emitted when a user withdraws tokens
+    event Withdrawal(address indexed user, address indexed token, uint256 amount);
+
     function withdraw(address _token, uint256 _amount) public {
         // implementation goes here
     }
