@@ -295,6 +295,8 @@ event CryptoReleased(uint256 indexed tradeId, address token, uint256 quantity, a
         require(offers[_offerId].offerStatus != OfferStatus.Closed, "Offer is already closed");
         // Closing the offer
         offers[_offerId].offerStatus = OfferStatus.Closed;
+        // Emitting the OfferClosed event
+        emit OfferClosed(_offerId);
     }
 
     function like(uint256 _accountId) public {
