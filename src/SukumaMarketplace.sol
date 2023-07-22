@@ -310,12 +310,15 @@ function like(uint64 _accountId) public {
     // Increment the likes count for the account
     accounts[accountAddress].likes += 1;
 }
-   
+       function dislike(uint64 _accountId) public {
+         // Retrieve the wallet address associated with the account ID
+    address accountAddress = idToAddress[_accountId];
 
+    // Ensure the account exists
+    require(accountAddress != address(0), "Account does not exist");
 
-
-    function dislike(uint256 _accountId) public {
-        // implementation goes here
+    // Increment the likes count for the account
+    accounts[accountAddress].dislikes += 1;
     }
 
     // function block(uint256 _accountId) public {
