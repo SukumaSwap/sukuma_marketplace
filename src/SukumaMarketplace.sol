@@ -300,20 +300,18 @@ event CryptoReleased(uint256 indexed tradeId, address token, uint256 quantity, a
         // Emitting the OfferClosed event
         emit OfferClosed(_offerId);
     }
+function like(uint64 _accountId) public {
+    // Retrieve the wallet address associated with the account ID
+    address accountAddress = idToAddress[_accountId];
 
-    // function like(uint256 _accountId) public {
-        
-    // }
+    // Ensure the account exists
+    require(accountAddress != address(0), "Account does not exist");
 
-function like(uint256 _accountId) public {
- // Check if the walletAddress is not the zero address
-    require(accounts[_accountId].walletAddress != address(0), "Account does not exist");
-  
-    
-
-    // Increase the likes of the account by 1
-    accounts[_accountId].likes += 1;
+    // Increment the likes count for the account
+    accounts[accountAddress].likes += 1;
 }
+   
+
 
 
     function dislike(uint256 _accountId) public {
