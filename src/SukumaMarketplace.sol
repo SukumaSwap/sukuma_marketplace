@@ -332,3 +332,13 @@ function like(uint64 _accountId) public {
     accounts[accountAddress].Blocks += 1;
     }
 }
+//Recommendations:
+
+// 1. Check the return value of `transferFrom` function in `deposit` function.
+// 2. Use the Checks-Effects-Interactions pattern in `withdraw` function.
+// 3. Add necessary input validation in your functions.
+// 4. Use modifiers to restrict access to functions.
+// 5. Emit events in all state-changing functions.
+// 6. Remove redundancy from your contract.
+// 7. Optimize gas usage where possible.
+// 8. Update your contract to use the latest functions provided by OpenZeppelin contracts.
