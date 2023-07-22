@@ -69,6 +69,8 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
      // Mapping of wallet address to Account
     mapping(address => Account) private accounts;
     uint64 private nextAccountId = 1; // Account ID starts at 1
+    //Mapping of accountId to Eth address
+mapping(uint64 => address) private idToAddress;
 
     // Events
     event OfferCreated(uint256 offerId);
@@ -299,9 +301,20 @@ event CryptoReleased(uint256 indexed tradeId, address token, uint256 quantity, a
         emit OfferClosed(_offerId);
     }
 
-    function like(uint256 _accountId) public {
+    // function like(uint256 _accountId) public {
         
-    }
+    // }
+
+function like(uint256 _accountId) public {
+ // Check if the walletAddress is not the zero address
+    require(accounts[_accountId].walletAddress != address(0), "Account does not exist");
+  
+    
+
+    // Increase the likes of the account by 1
+    accounts[_accountId].likes += 1;
+}
+
 
     function dislike(uint256 _accountId) public {
         // implementation goes here
