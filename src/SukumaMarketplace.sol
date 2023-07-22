@@ -69,7 +69,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable{
      // Mapping of wallet address to Account
     mapping(address => Account) private accounts;
     uint64 private nextAccountId = 1; // Account ID starts at 1
-    //Mapping of accountId to Eth address
+    // Mapping of accountId to Eth address
 mapping(uint64 => address) private idToAddress;
 
     // Events
