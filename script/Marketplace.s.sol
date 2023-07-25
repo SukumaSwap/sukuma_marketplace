@@ -2,11 +2,12 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
+import {Marketplace} from "@contracts/Marketplace.sol";
 
 contract MarketplaceScript is Script {
-    function setUp() public {}
-
     function run() public {
-        vm.broadcast();
+        vm.startBroadcast();
+
+        new Marketplace{salt: 0x0}();
     }
 }
