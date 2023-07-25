@@ -114,7 +114,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         address indexed token,
         uint256 amount
     );
-
+ event Deposit(address indexed token, address indexed account, uint256 amount);
     // Initializer - replaces the constructor when using the upgradeable pattern
     function initialize() public initializer {
         __Ownable_init();
@@ -289,6 +289,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         token.transferFrom(msg.sender, address(this), _amount);
         // Update the account's balance
         accounts[msg.sender].Balance[_token] += _amount;
+
     }
 
     //withdraw function
