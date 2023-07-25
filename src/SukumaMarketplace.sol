@@ -92,7 +92,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
     mapping(uint64 => address) private idToAddress;
 
     // Events
-    event OfferCreated(uint256 offerId);
+    event OfferCreated(uint256 offerId, address indexed token, uint256 quantity, OfferType offerType, string instructions, OfferStatus offerStatus);
     event TradeCreated(uint256 tradeId);
     event TransferCreated(uint256 transferId);
     event AccountCreated(address walletAddress, uint256 accountId);
@@ -286,6 +286,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         // Update the account's balance
         accounts[msg.sender].Balance[_token] += _amount;
     }
+
     //withdraw function
 function withdraw(address _token, uint256 quantity) public {
     // Ensure the user has enough tokens
