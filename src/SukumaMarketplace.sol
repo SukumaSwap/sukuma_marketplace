@@ -93,7 +93,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
 
     // Events
     event OfferCreated(uint256 offerId, address indexed token, uint256 quantity, OfferType offerType, string instructions, OfferStatus offerStatus);
-    event TradeCreated(uint256 tradeId);
+    event TradeCreated(uint256 tradeId, uint256 orderId, TradeType tradeType, TradeStatus status);
     event TransferCreated(uint256 transferId);
     event AccountCreated(address walletAddress, uint256 accountId);
     // Event to be emitted when an offer is closed
