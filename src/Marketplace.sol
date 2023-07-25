@@ -66,7 +66,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
             uint256 accountId,
             uint256 likes,
             uint256 dislikes,
-            uint256 Blocks
+            uint256 blocks
         )
     {
         Account storage account = accounts[walletAddress];
