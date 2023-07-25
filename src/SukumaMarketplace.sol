@@ -121,9 +121,10 @@ mapping(uint64 => address) private idToAddress;
         string[] memory _paymentMethods,
         OfferStatus _offerStatus
         ) public   {
-        
+         require(_token != address(0), "_token address cannot be zero");
+        require(_quantity > 0, "_quantity must be greater than zero");
          // incrementing the offerIdCounter for each new offer
-         offerIdCounter++;
+        offerIdCounter++ ;
 
          Offer memory newOffer = Offer({
             offerId: offerIdCounter,
@@ -237,19 +238,7 @@ mapping(uint64 => address) private idToAddress;
 // This event will be emitted when a user withdraws tokens
     event Withdrawal(address indexed user, address indexed token, uint256 amount);
 
-function withdraw(address _token, uint256 quantity) public {
-    // Ensure the user has enough tokens
-    require(accounts[msg.sender].Balance[_token] >= quantity, "Insufficient balance");
 
-    // Subtract the amount from the user's balance
-    accounts[msg.sender].Balance[_token] -= quantity;
-
-    // Transfer the tokens from this contract to the user
-    IERC20(_token).transfer(msg.sender, quantity);
-
-    // Emit the withdrawal event
-    emit Withdrawal(msg.sender, _token, quantity);
-}
    function checkBalance(address _account, address _token) external view returns (uint256) {
         // Return the balance of the account
          return accounts[_account].Balance[_token];
