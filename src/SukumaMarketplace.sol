@@ -289,6 +289,8 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         token.transferFrom(msg.sender, address(this), _amount);
         // Update the account's balance
         accounts[msg.sender].Balance[_token] += _amount;
+        // Emit the Deposit event
+        emit Deposit(_token, msg.sender, _amount);
 
     }
 
