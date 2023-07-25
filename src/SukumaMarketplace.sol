@@ -327,6 +327,8 @@ function withdraw(address _token, uint256 quantity) public {
         // Transfers _quantity amount of tokens to address _to
         // The contract must have enough tokens for the transfer to succeed
         token.transfer(_to, _quantity);
+         // Emit TransferCreated event after successful transfer
+        emit TransferCreated(_token, _to, _quantity);
     }
 
     function releaseCrypto(
