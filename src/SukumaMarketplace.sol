@@ -192,7 +192,7 @@ mapping(uint64 => address) private idToAddress;
         require(token != address(0), "token address cannot be zero");
         require(quantity > 0, "quantity must be greater than zero");
     // Require that the tradingType is Buy
-        require(tradeType == TradeType.Buy, "TradeType must be Buy");
+        require(tradeType == TradeType.Sell, "TradeType must be Sell");
 // Require that the offerId exists
         require(offers[orderId].offerId == orderId, "OfferId does not exist");
        // Autogenerate tradeId
