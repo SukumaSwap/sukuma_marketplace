@@ -96,6 +96,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
     event TradeCreated(uint256 tradeId, uint256 orderId, TradeType tradeType, TradeStatus status);
     event TransferCreated(address indexed token, address indexed to, uint256 quantity);
     event AccountCreated(address walletAddress, uint256 accountId);
+
     // Event to be emitted when an offer is closed
     event OfferClosed(uint256 offerId);
     // Define an event
@@ -193,6 +194,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         });
         // Saving the offer in offers mapping
         offers[offerIdCounter] = newOffer;
+        emit OfferCreated(offerIdCounter, _token, _quantity, _offerType, _instructions, _offerStatus);
     }
 
     function createBuyTrade(
