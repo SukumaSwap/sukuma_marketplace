@@ -286,7 +286,20 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         // Update the account's balance
         accounts[msg.sender].Balance[_token] += _amount;
     }
+    //withdraw function
+function withdraw(address _token, uint256 quantity) public {
+    // Ensure the user has enough tokens
+    require(accounts[msg.sender].Balance[_token] >= quantity, "Insufficient balance");
 
+    // Subtract the amount from the user's balance
+    accounts[msg.sender].Balance[_token] -= quantity;
+
+    // Transfer the tokens from this contract to the user
+    IERC20(_token).transfer(msg.sender, quantity);
+
+    // Emit the withdrawal event
+    emit Withdrawal(msg.sender, _token, quantity);
+}
 
     function checkBalance(
         address _account,
