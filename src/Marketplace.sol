@@ -1,15 +1,15 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.13;
 //necessary imports not yet installed
-import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "@openzeppelin/upgradeable/access/OwnableUpgradeable.sol";
 // Importing OpenZeppelin's ERC20 interface
-import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-import "openzeppelin/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 // import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract SukumaMarketplace is Initializable, OwnableUpgradeable {
+contract Marketplace is Initializable, OwnableUpgradeable {
     //enums
     enum OfferType {
         Buy,
@@ -92,9 +92,25 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
     mapping(uint64 => address) private idToAddress;
 
     // Events
-    event OfferCreated(uint256 offerId, address indexed token, uint256 quantity, OfferType offerType, string instructions, OfferStatus offerStatus);
-    event TradeCreated(uint256 tradeId, uint256 orderId, TradeType tradeType, TradeStatus status);
-    event TransferCreated(address indexed token, address indexed to, uint256 quantity);
+    event OfferCreated(
+        uint256 offerId,
+        address indexed token,
+        uint256 quantity,
+        OfferType offerType,
+        string instructions,
+        OfferStatus offerStatus
+    );
+    event TradeCreated(
+        uint256 tradeId,
+        uint256 orderId,
+        TradeType tradeType,
+        TradeStatus status
+    );
+    event TransferCreated(
+        address indexed token,
+        address indexed to,
+        uint256 quantity
+    );
     event AccountCreated(address walletAddress, uint256 accountId);
 
     // Event to be emitted when an offer is closed
@@ -108,13 +124,18 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
     );
     // Event to emit when the marketplace fee is changed
     event MarketplaceFeeChanged(uint256 newFee);
-     // This event will be emitted when a user withdraws tokens
+    // This event will be emitted when a user withdraws tokens
     event Withdrawal(
         address indexed user,
         address indexed token,
         uint256 amount
     );
- event Deposit(address indexed token, address indexed account, uint256 amount);
+    event Deposit(
+        address indexed token,
+        address indexed account,
+        uint256 amount
+    );
+
     // Initializer - replaces the constructor when using the upgradeable pattern
     function initialize() public initializer {
         __Ownable_init();
@@ -194,7 +215,14 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         });
         // Saving the offer in offers mapping
         offers[offerIdCounter] = newOffer;
-        emit OfferCreated(offerIdCounter, _token, _quantity, _offerType, _instructions, _offerStatus);
+        emit OfferCreated(
+            offerIdCounter,
+            _token,
+            _quantity,
+            _offerType,
+            _instructions,
+            _offerStatus
+        );
     }
 
     function createBuyTrade(
@@ -231,7 +259,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         });
         // Store the trade
         trades[tradeId] = trade;
-         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
+        emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
 
     function createSellTrade(
@@ -291,23 +319,25 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         accounts[msg.sender].Balance[_token] += _amount;
         // Emit the Deposit event
         emit Deposit(_token, msg.sender, _amount);
-
     }
 
     //withdraw function
-function withdraw(address _token, uint256 quantity) public {
-    // Ensure the user has enough tokens
-    require(accounts[msg.sender].Balance[_token] >= quantity, "Insufficient balance");
+    function withdraw(address _token, uint256 quantity) public {
+        // Ensure the user has enough tokens
+        require(
+            accounts[msg.sender].Balance[_token] >= quantity,
+            "Insufficient balance"
+        );
 
-    // Subtract the amount from the user's balance
-    accounts[msg.sender].Balance[_token] -= quantity;
+        // Subtract the amount from the user's balance
+        accounts[msg.sender].Balance[_token] -= quantity;
 
-    // Transfer the tokens from this contract to the user
-    IERC20(_token).transfer(msg.sender, quantity);
+        // Transfer the tokens from this contract to the user
+        IERC20(_token).transfer(msg.sender, quantity);
 
-    // Emit the withdrawal event
-    emit Withdrawal(msg.sender, _token, quantity);
-}
+        // Emit the withdrawal event
+        emit Withdrawal(msg.sender, _token, quantity);
+    }
 
     function checkBalance(
         address _account,
@@ -327,7 +357,7 @@ function withdraw(address _token, uint256 quantity) public {
         // Transfers _quantity amount of tokens to address _to
         // The contract must have enough tokens for the transfer to succeed
         token.transfer(_to, _quantity);
-         // Emit TransferCreated event after successful transfer
+        // Emit TransferCreated event after successful transfer
         emit TransferCreated(_token, _to, _quantity);
     }
 
