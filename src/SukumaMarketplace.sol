@@ -266,6 +266,7 @@ contract SukumaMarketplace is Initializable, OwnableUpgradeable {
         });
         // Store the trade
         trades[tradeId] = trade;
+        emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
 
     // Function to get the current marketplace fee
