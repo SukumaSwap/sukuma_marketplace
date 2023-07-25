@@ -121,9 +121,9 @@ mapping(uint64 => address) private idToAddress;
         string[] memory _paymentMethods,
         OfferStatus _offerStatus
         ) public   {
-        // implementation goes here
+        
          // incrementing the offerIdCounter for each new offer
-        offerIdCounter = offerIdCounter+1;
+         offerIdCounter++;
 
          Offer memory newOffer = Offer({
             offerId: offerIdCounter,
