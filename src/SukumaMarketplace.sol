@@ -189,7 +189,8 @@ mapping(uint64 => address) private idToAddress;
         address token,
         TradeType tradeType,
         uint64 amount) public {
-       
+        require(token != address(0), "token address cannot be zero");
+        require(quantity > 0, "quantity must be greater than zero");
     // Require that the tradingType is Buy
         require(tradeType == TradeType.Buy, "TradeType must be Buy");
 // Require that the offerId exists
