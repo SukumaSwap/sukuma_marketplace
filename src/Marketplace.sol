@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.20;
 //necessary imports not yet installed
 import "@openzeppelin/upgradeable/access/OwnableUpgradeable.sol";
 // Importing OpenZeppelin's ERC20 interface
@@ -9,69 +9,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 // import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract Marketplace is Initializable, OwnableUpgradeable {
-    //enums
-    enum OfferType {
-        Buy,
-        Sell
-    }
-    enum OfferStatus {
-        Open,
-        Closed
-    }
-    enum TradeType {
-        Buy,
-        Sell
-    }
-    enum TradeStatus {
-        Active,
-        Disputed,
-        Completed
-    }
-    // Structs
-    struct Offer {
-        uint256 offerId;
-        address token;
-        uint256 quantity;
-        OfferType offerType;
-        uint256 min;
-        uint256 max;
-        string instructions;
-        uint256 offerRate;
-        string[] acceptedCurrency;
-        string[] paymentMethods;
-        OfferStatus offerStatus;
-    }
+import {IMarketplace} from "@contracts/IMarketplace.sol";
 
-    struct Trade {
-        uint256 tradeId;
-        uint256 orderId;
-        TradeStatus status;
-        uint256 quantity; // token amount
-        address receiver;
-        address sender;
-        address token;
-        TradeType tradeType;
-        uint64 amount;
-    }
-
-    struct Transfer {
-        uint256 transferId;
-        address token;
-        uint256 quantity;
-        address sender;
-        address receiver;
-    }
-
-    struct Account {
-        address walletAddress;
-        uint64 accountId;
-        uint256 likes;
-        uint256 dislikes;
-        uint256 Blocks;
-        mapping(address => uint256) Balance; // Mapping of token to quantity
-    }
-
+contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     // Variables
     uint256 private marketplaceFee;
     //variable to count trades
@@ -90,51 +30,6 @@ contract Marketplace is Initializable, OwnableUpgradeable {
     uint64 private nextAccountId = 1; // Account ID starts at 1
     // Mapping of accountId to Eth address
     mapping(uint64 => address) private idToAddress;
-
-    // Events
-    event OfferCreated(
-        uint256 offerId,
-        address indexed token,
-        uint256 quantity,
-        OfferType offerType,
-        string instructions,
-        OfferStatus offerStatus
-    );
-    event TradeCreated(
-        uint256 tradeId,
-        uint256 orderId,
-        TradeType tradeType,
-        TradeStatus status
-    );
-    event TransferCreated(
-        address indexed token,
-        address indexed to,
-        uint256 quantity
-    );
-    event AccountCreated(address walletAddress, uint256 accountId);
-
-    // Event to be emitted when an offer is closed
-    event OfferClosed(uint256 offerId);
-    // Define an event
-    event CryptoReleased(
-        uint256 indexed tradeId,
-        address token,
-        uint256 quantity,
-        address receiver
-    );
-    // Event to emit when the marketplace fee is changed
-    event MarketplaceFeeChanged(uint256 newFee);
-    // This event will be emitted when a user withdraws tokens
-    event Withdrawal(
-        address indexed user,
-        address indexed token,
-        uint256 amount
-    );
-    event Deposit(
-        address indexed token,
-        address indexed account,
-        uint256 amount
-    );
 
     // Initializer - replaces the constructor when using the upgradeable pattern
     function initialize() public initializer {
@@ -179,7 +74,7 @@ contract Marketplace is Initializable, OwnableUpgradeable {
             account.accountId,
             account.likes,
             account.dislikes,
-            account.Blocks
+            account.blocks
         );
     }
 
@@ -316,7 +211,7 @@ contract Marketplace is Initializable, OwnableUpgradeable {
         // Transfer the tokens to this contract
         token.transferFrom(msg.sender, address(this), _amount);
         // Update the account's balance
-        accounts[msg.sender].Balance[_token] += _amount;
+        accounts[msg.sender].balance[_token] += _amount;
         // Emit the Deposit event
         emit Deposit(_token, msg.sender, _amount);
     }
@@ -325,12 +220,12 @@ contract Marketplace is Initializable, OwnableUpgradeable {
     function withdraw(address _token, uint256 quantity) public {
         // Ensure the user has enough tokens
         require(
-            accounts[msg.sender].Balance[_token] >= quantity,
+            accounts[msg.sender].balance[_token] >= quantity,
             "Insufficient balance"
         );
 
         // Subtract the amount from the user's balance
-        accounts[msg.sender].Balance[_token] -= quantity;
+        accounts[msg.sender].balance[_token] -= quantity;
 
         // Transfer the tokens from this contract to the user
         IERC20(_token).transfer(msg.sender, quantity);
@@ -344,7 +239,7 @@ contract Marketplace is Initializable, OwnableUpgradeable {
         address _token
     ) external view returns (uint256) {
         // Return the balance of the account
-        return accounts[_account].Balance[_token];
+        return accounts[_account].balance[_token];
     }
 
     function transfer(address _token, uint256 _quantity, address _to) public {
@@ -427,7 +322,7 @@ contract Marketplace is Initializable, OwnableUpgradeable {
         require(accountAddress != address(0), "Account does not exist");
 
         // Increment the likes count for the account
-        accounts[accountAddress].Blocks += 1;
+        accounts[accountAddress].blocks += 1;
     }
 }
 //Recommendations:
