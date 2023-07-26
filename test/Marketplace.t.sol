@@ -7,6 +7,24 @@ contract MarketplaceTest is BaseTest {
     function setUp() public override {
         super.setUp();
     }
+    //functions to be tested:
+    //   1.createAccount.
+    //   2.getAccount.
+    //   3.createOffer.
+    //   4.createBuyTrade.
+    //   5.createSellTrade.
+    //   6.getMarketplaceFee.
+    //   7.setMarketplaceFee
+    //   8.deposit.
+    //   9.withdraw.
+    //   10.checkBalance.
+    //   11.trasfer.
+    //   12.releaseCrypto.
+    //   13.closeOffer.
+    //   14.like.
+    //   15.dislike.
+    //   16.blockAccount.
+    
 //test for createAccount
     function testFuzz_createAccount(address caller) public {
         vm.startPrank(caller);
@@ -41,6 +59,7 @@ contract MarketplaceTest is BaseTest {
         assertEq(likes, 0);
         assertEq(dislikes, 0);
     }
+
  // Test for transfer 
 function testFuzz_transfer(address _caller, address _token, uint256 _quantity, address _recipient) public {
     vm.startPrank(_caller);
