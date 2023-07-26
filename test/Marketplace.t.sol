@@ -7,7 +7,7 @@ contract MarketplaceTest is BaseTest {
     function setUp() public override {
         super.setUp();
     }
-
+//test for createAccount
     function testFuzz_createAccount(address caller) public {
         vm.startPrank(caller);
 
@@ -41,6 +41,21 @@ contract MarketplaceTest is BaseTest {
         assertEq(likes, 0);
         assertEq(dislikes, 0);
     }
+ // Test for transfer 
+function testFuzz_transfer(address _caller, address _token, uint256 _quantity, address _recipient) public {
+    vm.startPrank(_caller);
+
+    // Assume that the account has been created and has enough balance
+    marketplace.deposit(_token, _quantity);  // Deposit initial quantity
+
+    marketplace.transfer(_token, _quantity, _recipient); // Transfer a portion of the funds
+
+    // Check that the account's balance has been reduced by the correct amount
+    (, , , uint256 balance) = marketplace.getAccount(_caller);
+    assertEq(balance, _quantity - _quantity);
+    
+    vm.stopPrank();
+}
     //function to test withdrawal function
      function testFuzz_partialWithdraw(
         address caller,
