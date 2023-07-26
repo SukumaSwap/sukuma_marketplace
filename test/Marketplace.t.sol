@@ -24,7 +24,7 @@ contract MarketplaceTest is BaseTest {
     //   14.like.
     //   15.dislike.
     //   16.blockAccount.
-    
+
 //test for createAccount
     function testFuzz_createAccount(address caller) public {
         vm.startPrank(caller);
@@ -62,6 +62,10 @@ contract MarketplaceTest is BaseTest {
 
  // Test for transfer 
 function testFuzz_transfer(address _caller, address _token, uint256 _quantity, address _recipient) public {
+    require(_caller != address(0), "Invalid caller address");
+    require(_token != address(0), "Invalid token address");
+    require(_recipient != address(0), "Invalid recipient address");
+    require(_quantity > 0, "Quantity must be greater than zero");
     vm.startPrank(_caller);
 
     // Assume that the account has been created and has enough balance
