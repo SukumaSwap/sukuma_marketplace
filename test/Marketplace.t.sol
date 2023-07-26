@@ -41,4 +41,27 @@ contract MarketplaceTest is BaseTest {
         assertEq(likes, 0);
         assertEq(dislikes, 0);
     }
+    //function to test withdrawal function
+     function testFuzz_partialWithdraw(
+        address caller,
+        address token,
+        uint256 quantity,
+        uint256 withdrawAmount
+    ) public {
+        require(withdrawAmount <= quantity, "Withdraw amount is more than quantity");
+        
+        vm.startPrank(caller);
+
+        // Assume that the account has been created and has enough balance
+        marketplace.deposit(token, quantity);  // Deposit initial quantity
+
+        marketplace.withdraw(token, withdrawAmount); // Withdraw a portion of the funds
+
+        // Check that the account's balance has been reduced by the correct amount
+        (, , , uint256 balance) = marketplace.getAccount(caller);
+        assertEq(balance, quantity - withdrawAmount);
+        
+        vm.stopPrank();
+    }  
+ 
 }
