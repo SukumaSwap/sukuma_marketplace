@@ -2,33 +2,34 @@
 pragma solidity ^0.8.20;
 
 import {BaseTest} from "./BaseTest.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IMarketplace} from "@contracts/IMarketplace.sol";
 
 contract MarketplaceTest is BaseTest {
     function setUp() public override {
         super.setUp();
-        vm.createSelectFork("https://eth.llamarpc.com");
-
     }
+
     //functions to be tested:
-    //   1.createAccount.
-    //   2.getAccount.
-    //   3.createOffer.
+    //   1.createAccount.     [x]
+    //   2.getAccount.        [x]
+    //   3.createOffer.       [x]
     //   4.createBuyTrade.
     //   5.createSellTrade.
-    //   6.getMarketplaceFee.
-    //   7.setMarketplaceFee
-    //   8.deposit.
-    //   9.withdraw.
-    //   10.checkBalance.
-    //   11.trasfer.
+    //   6.getMarketplaceFee. [x]
+    //   7.setMarketplaceFee  [x]
+    //   8.deposit.           [x]
+    //   9.withdraw.          [x]
+    //   10.checkBalance.     [x]
+    //   11.transfer.         [x]
     //   12.releaseCrypto.
-    //   13.closeOffer.
-    //   14.like.
-    //   15.dislike.
-    //   16.blockAccount.
+    //   13.closeOffer.         [x]
+    //   14.like.               [x]
+    //   15.dislike.            [x]
+    //   16.blockAccount.       [*]
 
-//test for createAccount
-    function testFuzz_createAccount(address caller) public {
+    //test for createAccount
+    function testFuzz_CreateAccount(address caller) public {
         vm.startPrank(caller);
 
         uint256 id = marketplace.createAccount();
@@ -37,7 +38,7 @@ contract MarketplaceTest is BaseTest {
         vm.stopPrank();
     }
 
-    function testFuzz_getAccount(
+    function testFuzz_GetAccount(
         address caller,
         address another_caller
     ) public {
@@ -62,55 +63,161 @@ contract MarketplaceTest is BaseTest {
         assertEq(dislikes, 0);
     }
 
- // Test for transfer 
-function testFuzz_transfer() public {
-     uint quantity =45;
-     
-     address defaultUser =makeAddr("defaultUser");
-     address recipient =makeAddr("recipient");
-     address token = 0x163f8C2467924be0ae7B5347228CABF260318753;
-     
-    //   assertEq(vm.activeFork(),1 );
-      deal(token,defaultUser,quantity);
-      deal(defaultUser, 10 ether);
-    vm.startPrank(defaultUser);
-//approve marketplace to trasfer token from acc to markertplace
+    // Test for transfer
+    function testFork_Transfer() external {
+        uint256 quantity = 45;
+        address token = WLD;
 
-    // Assume that the account has been created and has enough balance
-    marketplace.deposit(token, quantity);  // Deposit initial quantity
-//get balance after deposit
-(, , , uint256 balance) = marketplace.getAccount(defaultUser);
-    assertEq(balance,quantity);
-
-    marketplace.transfer(token, quantity,recipient); // Transfer a portion of the funds
-
-    // Check that the account's balance has been reduced by the correct amount
-    (, , , uint256 balanceAfter) = marketplace.getAccount(defaultUser);
-    assertEq(balanceAfter,0);
-    
-    vm.stopPrank();
-}
-    //function to test withdrawal function
-     function testFuzz_partialWithdraw(
-        address caller,
-        address token,
-        uint256 quantity,
-        uint256 withdrawAmount
-    ) public {
-        require(withdrawAmount <= quantity, "Withdraw amount is more than quantity");
-        
-        vm.startPrank(caller);
+        deal(token, defaultAdmin, quantity);
+        vm.startPrank(defaultAdmin);
+        //approve marketplace to trasfer token from acc to markertplace
+        IERC20(token).approve(address(marketplace), quantity);
 
         // Assume that the account has been created and has enough balance
-        marketplace.deposit(token, quantity);  // Deposit initial quantity
+        marketplace.deposit(token, quantity); // Deposit initial quantity
+        //get balance after deposit
+        uint256 balance = marketplace.checkBalance(defaultAdmin, token);
+        assertEq(balance, quantity);
 
-        marketplace.withdraw(token, withdrawAmount); // Withdraw a portion of the funds
+        marketplace.transfer(token, quantity, trader1); // Transfer a portion of the funds
 
         // Check that the account's balance has been reduced by the correct amount
-        (, , , uint256 balance) = marketplace.getAccount(caller);
-        assertEq(balance, quantity - withdrawAmount);
-        
+        balance = marketplace.checkBalance(defaultAdmin, token);
+        assertEq(balance, 0);
+
+        balance = marketplace.checkBalance(trader1, token);
+
+        assertEq(balance, quantity);
+
         vm.stopPrank();
-    }  
- 
+    }
+
+    // Test for setMarketplaceFee
+    function testFuzz_SetMarketplaceFee(uint256 fee) external {
+        vm.startPrank(defaultAdmin);
+
+        marketplace.setMarketplaceFee(fee);
+
+        assertEq(marketplace.getMarketplaceFee(), fee);
+
+        vm.stopPrank();
+    }
+
+    // Test for withdraw
+    function testFork_Withdraw() external {
+        uint256 quantity = 45;
+
+        vm.startPrank(defaultAdmin);
+        // deposit
+        {
+            deal(WLD, defaultAdmin, quantity);
+            IERC20(WLD).approve(address(marketplace), quantity);
+            marketplace.deposit(WLD, quantity);
+            uint256 balance = marketplace.checkBalance(defaultAdmin, WLD);
+            assertEq(balance, quantity);
+        }
+
+        // withdraw
+        {
+            marketplace.withdraw(WLD, 20);
+            uint256 balance = marketplace.checkBalance(defaultAdmin, WLD);
+            assertEq(balance, 25);
+        }
+        vm.stopPrank();
+    }
+
+    // Test for like
+    function test_Like() external {
+        uint256 account_id = 0;
+        address alice = makeAddr("alice");
+
+        // create account
+        {
+            vm.startPrank(alice);
+            account_id = marketplace.createAccount();
+
+            assertEq(account_id, 1);
+            vm.stopPrank();
+        }
+
+        // like
+        {
+            address bob = makeAddr("bob");
+            vm.startPrank(bob);
+            marketplace.like(account_id);
+            (, uint256 likes, , ) = marketplace.getAccount(alice);
+            assertEq(likes, 1);
+            vm.stopPrank();
+        }
+    }
+
+    // Test for dislike
+    function test_Dislike() external {
+        uint256 account_id = 0;
+        address alice = makeAddr("alice");
+
+        // create account
+        {
+            vm.startPrank(alice);
+            account_id = marketplace.createAccount();
+
+            assertEq(account_id, 1);
+            vm.stopPrank();
+        }
+
+        // dislike
+        {
+            address bob = makeAddr("bob");
+            vm.startPrank(bob);
+            marketplace.dislike(account_id);
+            (, , uint256 dislikes, ) = marketplace.getAccount(alice);
+            assertEq(dislikes, 1);
+            vm.stopPrank();
+        }
+    }
+
+    // Test for createOffer
+    function testFork_CreateOffer() external {
+        uint256 quantity = 100;
+        address alice = makeAddr("alice");
+        vm.startPrank(alice);
+        // deposit
+        {
+            deal(WLD, alice, quantity);
+            IERC20(WLD).approve(address(marketplace), quantity);
+            marketplace.deposit(WLD, quantity);
+            uint256 balance = marketplace.checkBalance(alice, WLD);
+            assertEq(balance, quantity);
+        }
+        // create offer
+        uint256 offerId;
+        {
+            uint256 _offerRate = 1;
+            string[] memory currencies = new string[](1);
+            currencies[0] = "USD";
+            string[] memory methods = new string[](1);
+            methods[0] = "Mastercard";
+
+            offerId = marketplace.createOffer(
+                WLD,
+                quantity,
+                IMarketplace.OfferType.Buy,
+                1, // min
+                100, // max
+                "instructions",
+                _offerRate,
+                currencies,
+                methods
+            );
+            assertEq(offerId, 1);
+        }
+        vm.stopPrank();
+
+        // close offer
+        {
+            vm.startPrank(alice);
+            marketplace.closeOffer(offerId);
+            vm.stopPrank();
+        }
+    }
 }

@@ -22,6 +22,7 @@ interface IMarketplace {
     }
     // Structs
     struct Offer {
+        address owner;
         uint256 offerId;
         address token;
         uint256 quantity;
@@ -57,7 +58,7 @@ interface IMarketplace {
 
     struct Account {
         address walletAddress;
-        uint64 accountId;
+        uint256 accountId;
         uint256 likes;
         uint256 dislikes;
         uint256 blocks;

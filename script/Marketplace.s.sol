@@ -8,6 +8,7 @@ contract MarketplaceScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        new Marketplace{salt: 0x0}();
+        Marketplace marketplace = new Marketplace{salt: 0x0}();
+        marketplace.initialize();
     }
 }

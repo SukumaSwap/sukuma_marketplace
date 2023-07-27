@@ -27,19 +27,19 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
 
     // Mapping of wallet address to Account
     mapping(address => Account) private accounts;
-    uint64 private nextAccountId = 1; // Account ID starts at 1
+    uint256 private nextAccountId = 1; // Account ID starts at 1
     // Mapping of accountId to Eth address
-    mapping(uint64 => address) private idToAddress;
+    mapping(uint256 => address) private idToAddress;
 
     // Initializer - replaces the constructor when using the upgradeable pattern
-    function initialize() public initializer {
+    function initialize() external initializer {
         __Ownable_init();
     }
 
     // Modifier
 
     // Functions
-    function createAccount() public returns (uint256) {
+    function createAccount() external returns (uint256) {
         // Ensure account does not already exist
         require(
             accounts[msg.sender].walletAddress == address(0),
@@ -49,6 +49,9 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         Account storage account = accounts[msg.sender];
         account.walletAddress = msg.sender;
         account.accountId = nextAccountId;
+
+        // Store account ID to wallet address mapping
+        idToAddress[nextAccountId] = msg.sender;
         // Emit event
         emit AccountCreated(msg.sender, nextAccountId);
         // Increment next account ID
@@ -60,7 +63,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     function getAccount(
         address walletAddress
     )
-        public
+        external
         view
         returns (
             uint256 accountId,
@@ -87,15 +90,30 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         string memory _instructions,
         uint256 _offerRate,
         string[] memory _acceptedCurrency,
-        string[] memory _paymentMethods,
-        OfferStatus _offerStatus
-    ) public {
+        string[] memory _paymentMethods
+    ) external returns (uint256 offerId) {
         require(_token != address(0), "_token address cannot be zero");
         require(_quantity > 0, "_quantity must be greater than zero");
+
+        uint balance = accounts[msg.sender].balance[_token];
+
+        require(balance >= _quantity, "Insufficient balance");
+        require(_min > 0, "min must be greater than zero");
+        require(_max <= balance, "max must be less than or equal to balance");
+
+        require(
+            _acceptedCurrency.length > 0,
+            "acceptedCurrency cannot be empty"
+        );
+        require(_paymentMethods.length > 0, "paymentMethods cannot be empty");
+
         // incrementing the offerIdCounter for each new offer
         offerIdCounter++;
 
+        // Creating a new offer
+        offerId = offerIdCounter;
         Offer memory newOffer = Offer({
+            owner: msg.sender,
             offerId: offerIdCounter,
             token: _token,
             quantity: _quantity,
@@ -106,17 +124,17 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
             offerRate: _offerRate,
             acceptedCurrency: _acceptedCurrency,
             paymentMethods: _paymentMethods,
-            offerStatus: _offerStatus
+            offerStatus: OfferStatus.Open
         });
         // Saving the offer in offers mapping
-        offers[offerIdCounter] = newOffer;
+        offers[offerId] = newOffer;
         emit OfferCreated(
-            offerIdCounter,
+            offerId,
             _token,
             _quantity,
             _offerType,
             _instructions,
-            _offerStatus
+            OfferStatus.Open
         );
     }
 
@@ -128,7 +146,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         address token,
         TradeType tradeType,
         uint64 amount
-    ) public {
+    ) external {
         //input validators
         require(token != address(0), "token address cannot be zero");
         require(quantity > 0, "quantity must be greater than zero");
@@ -165,7 +183,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         address token,
         TradeType tradeType,
         uint64 amount
-    ) public {
+    ) external {
         require(token != address(0), "token address cannot be zero");
         require(quantity > 0, "quantity must be greater than zero");
         // Require that the tradingType is Buy
@@ -193,23 +211,26 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     }
 
     // Function to get the current marketplace fee
-    function getMarketplaceFee() public view returns (uint256) {
+    function getMarketplaceFee() external view returns (uint256) {
         return marketplaceFee;
     }
 
     // Function to set the marketplace fee, can only be called by the contract owner
-    function setMarketplaceFee(uint256 _fee) public onlyOwner {
+    function setMarketplaceFee(uint256 _fee) external onlyOwner {
         marketplaceFee = _fee;
 
         // Emitting an event when the marketplace fee is changed
         emit MarketplaceFeeChanged(_fee);
     }
 
-    function deposit(address _token, uint256 _amount) public {
+    function deposit(address _token, uint256 _amount) external {
         // We use the ERC20 interface to interact with any ERC20 token
         IERC20 token = IERC20(_token);
         // Transfer the tokens to this contract
-        token.transferFrom(msg.sender, address(this), _amount);
+        bool success = token.transferFrom(msg.sender, address(this), _amount);
+
+        // Ensure the transfer succeeded
+        require(success, "Token transfer failed");
         // Update the account's balance
         accounts[msg.sender].balance[_token] += _amount;
         // Emit the Deposit event
@@ -217,7 +238,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     }
 
     //withdraw function
-    function withdraw(address _token, uint256 quantity) public {
+    function withdraw(address _token, uint256 quantity) external {
         // Ensure the user has enough tokens
         require(
             accounts[msg.sender].balance[_token] >= quantity,
@@ -228,7 +249,10 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         accounts[msg.sender].balance[_token] -= quantity;
 
         // Transfer the tokens from this contract to the user
-        IERC20(_token).transfer(msg.sender, quantity);
+        bool success = IERC20(_token).transfer(msg.sender, quantity);
+
+        // Ensure the transfer succeeded
+        require(success, "Token transfer failed");
 
         // Emit the withdrawal event
         emit Withdrawal(msg.sender, _token, quantity);
@@ -242,16 +266,32 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         return accounts[_account].balance[_token];
     }
 
-    function transfer(address _token, uint256 _quantity, address _to) public {
+    function transfer(address _token, uint256 _quantity, address _to) external {
         require(_quantity > 0, "Transfer quantity must be greater than zero");
         require(_to != address(0), "Receiver address cannot be zero address");
+
+        // Ensure the user has enough tokens
+        require(
+            accounts[msg.sender].balance[_token] >= _quantity,
+            "Insufficient balance"
+        );
+
+        // Subtract the amount from the user's balance
+        accounts[msg.sender].balance[_token] -= _quantity;
 
         // IERC20(_token) allows the contract to interact with the ERC20 token at address _token
         IERC20 token = IERC20(_token);
 
         // Transfers _quantity amount of tokens to address _to
         // The contract must have enough tokens for the transfer to succeed
-        token.transfer(_to, _quantity);
+        bool success = token.transfer(_to, _quantity);
+
+        // Ensure the transfer succeeded
+        require(success, "Token transfer failed");
+
+        // Update the balance of the receiver
+        accounts[_to].balance[_token] += _quantity;
+
         // Emit TransferCreated event after successful transfer
         emit TransferCreated(_token, _to, _quantity);
     }
@@ -262,7 +302,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         uint256 _tradeId,
         address _receiver,
         uint256 _balance
-    ) public {
+    ) external {
         require(_balance >= _quantity, "Insufficient balance");
 
         // IERC20(_token) allows the contract to interact with the ERC20 token at address _token
@@ -278,7 +318,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         emit CryptoReleased(_tradeId, _token, _quantity, _receiver);
     }
 
-    function closeOffer(uint256 _offerId) public {
+    function closeOffer(uint256 _offerId) external {
         // Checking if the offer exists
         require(offers[_offerId].offerId == _offerId, "Offer does not exist");
         // Checking if the offer is not already closed
@@ -286,13 +326,20 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
             offers[_offerId].offerStatus != OfferStatus.Closed,
             "Offer is already closed"
         );
+
+        // ensure that the caller is the owner of the offer
+        require(
+            offers[_offerId].owner == msg.sender,
+            "Only the owner can close the offer"
+        );
+
         // Closing the offer
         offers[_offerId].offerStatus = OfferStatus.Closed;
         // Emitting the OfferClosed event
         emit OfferClosed(_offerId);
     }
 
-    function like(uint64 _accountId) public {
+    function like(uint256 _accountId) external {
         // Retrieve the wallet address associated with the account ID
         address accountAddress = idToAddress[_accountId];
 
@@ -303,7 +350,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         accounts[accountAddress].likes += 1;
     }
 
-    function dislike(uint64 _accountId) public {
+    function dislike(uint256 _accountId) external {
         // Retrieve the wallet address associated with the account ID
         address accountAddress = idToAddress[_accountId];
 
@@ -314,7 +361,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         accounts[accountAddress].dislikes += 1;
     }
 
-    function blockAccount(uint64 _accountId) public {
+    function blockAccount(uint256 _accountId) external {
         // Retrieve the wallet address associated with the account ID
         address accountAddress = idToAddress[_accountId];
 
