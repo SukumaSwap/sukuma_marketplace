@@ -97,7 +97,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
 
         uint balance = accounts[msg.sender].balance[_token];
 
-        require(balance >= _quantity, "Insufficient balance");
+        require(balance >= _quantity, "Insufficient balance ,please deposit first");
         require(_min > 0, "min must be greater than zero");
         require(_max <= balance, "max must be less than or equal to balance");
 
@@ -126,6 +126,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
             paymentMethods: _paymentMethods,
             offerStatus: OfferStatus.Open
         });
+
         // Saving the offer in offers mapping
         offers[offerId] = newOffer;
         emit OfferCreated(
