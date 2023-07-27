@@ -13,6 +13,8 @@ abstract contract BaseTest is Test {
     address public trader1 = makeAddr("trader1");
 
     function setUp() public virtual {
+        // https://eth.llamarpc.com
+
         vm.label(defaultAdmin, "defaultAdmin");
         deal(defaultAdmin, 10 ether);
 

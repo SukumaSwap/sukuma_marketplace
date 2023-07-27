@@ -6,6 +6,8 @@ import {BaseTest} from "./BaseTest.sol";
 contract MarketplaceTest is BaseTest {
     function setUp() public override {
         super.setUp();
+        vm.createSelectFork("https://eth.llamarpc.com");
+
     }
     //functions to be tested:
     //   1.createAccount.
@@ -61,21 +63,30 @@ contract MarketplaceTest is BaseTest {
     }
 
  // Test for transfer 
-function testFuzz_transfer(address _caller, address _token, uint256 _quantity, address _recipient) public {
-    require(_caller != address(0), "Invalid caller address");
-    require(_token != address(0), "Invalid token address");
-    require(_recipient != address(0), "Invalid recipient address");
-    require(_quantity > 0, "Quantity must be greater than zero");
-    vm.startPrank(_caller);
+function testFuzz_transfer() public {
+     uint quantity =45;
+     
+     address defaultUser =makeAddr("defaultUser");
+     address recipient =makeAddr("recipient");
+     address token = 0x163f8C2467924be0ae7B5347228CABF260318753;
+     
+    //   assertEq(vm.activeFork(),1 );
+      deal(token,defaultUser,quantity);
+      deal(defaultUser, 10 ether);
+    vm.startPrank(defaultUser);
+//approve marketplace to trasfer token from acc to markertplace
 
     // Assume that the account has been created and has enough balance
-    marketplace.deposit(_token, _quantity);  // Deposit initial quantity
+    marketplace.deposit(token, quantity);  // Deposit initial quantity
+//get balance after deposit
+(, , , uint256 balance) = marketplace.getAccount(defaultUser);
+    assertEq(balance,quantity);
 
-    marketplace.transfer(_token, _quantity, _recipient); // Transfer a portion of the funds
+    marketplace.transfer(token, quantity,recipient); // Transfer a portion of the funds
 
     // Check that the account's balance has been reduced by the correct amount
-    (, , , uint256 balance) = marketplace.getAccount(_caller);
-    assertEq(balance, _quantity - _quantity);
+    (, , , uint256 balanceAfter) = marketplace.getAccount(defaultUser);
+    assertEq(balanceAfter,0);
     
     vm.stopPrank();
 }
