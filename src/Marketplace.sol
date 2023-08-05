@@ -177,7 +177,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
 //function to closeBuyTrde ,only be called by seller of Saleoffer
-function closeTrade(uint256 tradeId) external {
+function closeBuyTrade(uint256 tradeId) external {
         // Fetch the trade from the mapping
         Trade storage trade = trades[tradeId];
 
