@@ -80,6 +80,13 @@ interface IMarketplace {
         TradeType tradeType,
         TradeStatus status
     );
+    event TradeClosed(
+        uint256 tradeId,
+        uint256 orderId,
+        TradeType tradeType,
+        TradeStatus status
+    );
+
     event TransferCreated(
         address indexed token,
         address indexed to,

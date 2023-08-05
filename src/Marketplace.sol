@@ -80,6 +80,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
             account.blocks
         );
     }
+    
 
     function createOffer(
         address _token,
@@ -175,6 +176,37 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         trades[tradeId] = trade;
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
+//function to closeBuyTrde ,only be called by seller of Saleoffer
+function closeTrade(uint256 tradeId) external {
+        // Fetch the trade from the mapping
+        Trade storage trade = trades[tradeId];
+
+        // Check if the trade exists
+        require(trade.orderId != 0, "Trade does not exist");
+
+        // Check if the trade type is Buy
+        require(trade.tradeType == TradeType.Buy, "TradeType must be Buy");
+
+        // Fetch the min and max quantity
+        (uint256 minQuantity, uint256 maxQuantity) = getQuantity(tradeId);
+
+        // Check if the trade quantity is within the acceptable range
+        require(
+            trade.quantity > 0 && trade.quantity >= minQuantity && trade.quantity <= maxQuantity, 
+            "Trade quantity is out of range"
+        );
+
+        // Update the trade status to Completed
+        trade.status = TradeStatus.Completed;
+
+        // Emit the TradeClosed event
+        emit TradeClosed(tradeId, trade.orderId, trade.tradeType, TradeStatus.Completed);
+    }
+    // Placeholder function to return min and max quantity
+    function getQuantity(uint256 tradeId) internal pure returns (uint256, uint256) {
+        return (1, 100);
+    }
+
 
     function createSellTrade(
         uint256 orderId,
