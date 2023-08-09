@@ -28,8 +28,8 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     uint256 private nextAccountId = 1; // Account ID starts at 1
     // Mapping of accountId to Eth address
     mapping(uint256 => address) private idToAddress;
-    mapping(uint256 => Trade[]) public offerIdToTrades;//mapping of offerId to associatedarray of Trade
- 
+    mapping(uint256 => Trade[]) public offerIdToTrades; //mapping of offerId to associatedarray of Trade
+    mapping(uint256 => Offer[]) public accountIdToOffers; //mapping of AccountId to All Offers Created by that Account.
 
 
     // Initializer - replaces the constructor when using the upgradeable pattern
@@ -81,7 +81,6 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
             account.blocks
         );
     }
-    
 
     function createOffer(
         address _token,
@@ -99,7 +98,10 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
 
         uint balance = accounts[msg.sender].balance[_token];
 
-        require(balance >= _quantity, "Insufficient balance ,please deposit first");
+        require(
+            balance >= _quantity,
+            "Insufficient balance ,please deposit first"
+        );
         require(_min > 0, "min must be greater than zero");
         require(_max <= balance, "max must be less than or equal to balance");
 
@@ -176,11 +178,12 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         // Store the trade
         trades[tradeId] = trade;
         // Add the trade to the offerIdToTrades mapping
-    offerIdToTrades[orderId].push(trade);
+        offerIdToTrades[orderId].push(trade);
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
-//function to closeBuyTrde ,only be called by seller of Saleoffer
-function closeBuyTrade(uint256 tradeId) external {
+
+    //function to closeBuyTrde ,only be called by seller of Saleoffer
+    function closeBuyTrade(uint256 tradeId) external {
         // Fetch the trade from the mapping
         Trade storage trade = trades[tradeId];
 
@@ -195,7 +198,9 @@ function closeBuyTrade(uint256 tradeId) external {
 
         // Check if the trade quantity is within the acceptable range
         require(
-            trade.quantity > 0 && trade.quantity >= minQuantity && trade.quantity <= maxQuantity, 
+            trade.quantity > 0 &&
+                trade.quantity >= minQuantity &&
+                trade.quantity <= maxQuantity,
             "Trade quantity is out of range"
         );
 
@@ -203,14 +208,20 @@ function closeBuyTrade(uint256 tradeId) external {
         trade.status = TradeStatus.Completed;
 
         // Emit the TradeClosed event
-        emit TradeClosed(tradeId, trade.orderId, trade.tradeType, TradeStatus.Completed);
-    }
-    
-    // Placeholder function to return min and max quantity
-    function getQuantity(uint256 tradeId) internal pure returns (uint256, uint256) {
-        return (1, 100);
+        emit TradeClosed(
+            tradeId,
+            trade.orderId,
+            trade.tradeType,
+            TradeStatus.Completed
+        );
     }
 
+    // Placeholder function to return min and max quantity
+    function getQuantity(
+        uint256 tradeId
+    ) internal pure returns (uint256, uint256) {
+        return (1, 100);
+    }
 
     function createSellTrade(
         uint256 orderId,
@@ -245,7 +256,7 @@ function closeBuyTrade(uint256 tradeId) external {
         // Store the trade
         trades[tradeId] = trade;
         // Add the trade to the offerIdToTrades mapping
-    offerIdToTrades[orderId].push(trade);
+        offerIdToTrades[orderId].push(trade);
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
 
