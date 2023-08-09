@@ -23,13 +23,14 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => Trade) public trades;
     mapping(uint256 => Transfer) public transfers;
-    // mapping(uint256 => Account) public accounts; //to be deleted
-
     // Mapping of wallet address to Account
     mapping(address => Account) private accounts;
     uint256 private nextAccountId = 1; // Account ID starts at 1
     // Mapping of accountId to Eth address
     mapping(uint256 => address) private idToAddress;
+    mapping(uint256 => Trade[]) public offerIdToTrades;//mapping of offerId to associatedarray of Trade
+ 
+
 
     // Initializer - replaces the constructor when using the upgradeable pattern
     function initialize() external initializer {
@@ -174,6 +175,8 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         });
         // Store the trade
         trades[tradeId] = trade;
+        // Add the trade to the offerIdToTrades mapping
+    offerIdToTrades[orderId].push(trade);
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
 //function to closeBuyTrde ,only be called by seller of Saleoffer
@@ -202,6 +205,7 @@ function closeBuyTrade(uint256 tradeId) external {
         // Emit the TradeClosed event
         emit TradeClosed(tradeId, trade.orderId, trade.tradeType, TradeStatus.Completed);
     }
+    
     // Placeholder function to return min and max quantity
     function getQuantity(uint256 tradeId) internal pure returns (uint256, uint256) {
         return (1, 100);
@@ -240,6 +244,8 @@ function closeBuyTrade(uint256 tradeId) external {
         });
         // Store the trade
         trades[tradeId] = trade;
+        // Add the trade to the offerIdToTrades mapping
+    offerIdToTrades[orderId].push(trade);
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
 
