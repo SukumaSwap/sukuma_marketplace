@@ -113,9 +113,11 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
 
         // incrementing the offerIdCounter for each new offer
         offerIdCounter++;
-
+// Getting the account ID of the owner
+    uint256 accountId = accounts[msg.sender].accountId;
         // Creating a new offer
         offerId = offerIdCounter;
+        
         Offer memory newOffer = Offer({
             owner: msg.sender,
             offerId: offerIdCounter,
@@ -133,6 +135,9 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
 
         // Saving the offer in offers mapping
         offers[offerId] = newOffer;
+        // Adding the offer to accountIdToOffers mapping
+    accountIdToOffers[accountId].push(newOffer);
+
         emit OfferCreated(
             offerId,
             _token,
