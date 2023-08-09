@@ -30,6 +30,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     mapping(uint256 => address) private idToAddress;
     mapping(uint256 => Trade[]) public offerIdToTrades; //mapping of offerId to associatedarray of Trade
     mapping(uint256 => Offer[]) public accountIdToOffers; //mapping of AccountId to All Offers Created by that Account.
+mapping(address => Trade[]) public accountToTrades;//account address with an array of Trade objects
 
 
     // Initializer - replaces the constructor when using the upgradeable pattern
@@ -117,7 +118,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     uint256 accountId = accounts[msg.sender].accountId;
         // Creating a new offer
         offerId = offerIdCounter;
-        
+
         Offer memory newOffer = Offer({
             owner: msg.sender,
             offerId: offerIdCounter,
