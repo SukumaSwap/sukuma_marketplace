@@ -185,9 +185,13 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         trades[tradeId] = trade;
         // Add the trade to the offerIdToTrades mapping
         offerIdToTrades[orderId].push(trade);
+        // Add the trade to the accountToTrades mapping for both sender and receiver
+    accountToTrades[sender].push(trade);
+    accountToTrades[receiver].push(trade);
+
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
-
+    
     //function to closeBuyTrde ,only be called by seller of Saleoffer
     function closeBuyTrade(uint256 tradeId) external {
         // Fetch the trade from the mapping
@@ -263,6 +267,10 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         trades[tradeId] = trade;
         // Add the trade to the offerIdToTrades mapping
         offerIdToTrades[orderId].push(trade);
+        // Add the trade to the accountToTrades mapping for both sender and receiver
+    accountToTrades[sender].push(trade);
+    accountToTrades[receiver].push(trade);
+
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
 
