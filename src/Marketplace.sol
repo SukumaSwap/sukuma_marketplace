@@ -363,12 +363,13 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         emit TransferCreated(_token, _to, _quantity);
     }
 
-   solidity
+   
 function releaseCrypto(
     address receiver,
     uint256 quantity,
     address token,
     uint256 tradeId,
+     uint256 offerId,
     uint256 balance
 ) external {
     // Check if the function is called by the address that created the sellOffer or sellTrade
