@@ -332,6 +332,7 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         return accounts[_account].balance[_token];
     }
 
+//function to transfer crypto
     function transfer(address _token, uint256 _quantity, address _to) external {
         require(_quantity > 0, "Transfer quantity must be greater than zero");
         require(_to != address(0), "Receiver address cannot be zero address");
@@ -362,27 +363,51 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         emit TransferCreated(_token, _to, _quantity);
     }
 
-    function releaseCrypto(
-        address _token,
-        uint256 _quantity,
-        uint256 _tradeId,
-        address _receiver,
-        uint256 _balance
-    ) external {
-        require(_balance >= _quantity, "Insufficient balance");
+   solidity
+function releaseCrypto(
+    address receiver,
+    uint256 quantity,
+    address token,
+    uint256 tradeId,
+    uint256 balance
+) external {
+    // Check if the function is called by the address that created the sellOffer or sellTrade
+    require(
+        msg.sender == offers[offerId].owner || msg.sender == trades[tradeId].sender,
+        "Only the creator of the sellOffer or sellTrade can call this function"
+    );
 
-        // IERC20(_token) allows the contract to interact with the ERC20 token at address _token
-        IERC20 token = IERC20(_token);
+    // Check if the parameters match the trade or offer
+    require(receiver == trades[tradeId].receiver, "Receiver address does not match the trade");
+    require(quantity == trades[tradeId].quantity, "Quantity does not match the trade");
+    require(token == trades[tradeId].token, "Token address does not match the trade");
 
-        // Transfer the tokens
-        require(token.transfer(_receiver, _quantity), "Token transfer failed");
+    // Check if crypto has already been released
+    require(!releasedCrypto, "Crypto has already been released");
 
-        // Update the balance
-        _balance -= _quantity;
+    // Check if the sender has sufficient balance
+    require(balance >= quantity, "Insufficient balance");
 
-        // Emit an event for the token release
-        emit CryptoReleased(_tradeId, _token, _quantity, _receiver);
-    }
+    // Update the account balances
+    Account storage senderAccount = accounts[trades[tradeId].sender];
+    Account storage receiverAccount = accounts[receiver];
+    senderAccount.balance[token] -= quantity;
+    receiverAccount.balance[token] += quantity;
+
+    // Update the releasedCrypto bool
+    releasedCrypto = true;
+
+    // Add the trade to accountToTrades mapping
+    accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
+    accountToTrades[receiver].push(trades[tradeId]);
+
+    // Emit an event to indicate that the crypto has been released
+    emit CryptoReleased(tradeId, receiver, quantity, token);
+
+    // Transfer the crypto to the receiver's address
+    IERC20(token).transfer(receiver, quantity);
+}
+
 
     function closeOffer(uint256 _offerId) external {
         // Checking if the offer exists
