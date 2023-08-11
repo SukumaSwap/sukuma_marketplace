@@ -363,7 +363,7 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         emit TransferCreated(_token, _to, _quantity);
     }
 
-   
+//function releaseCrypto   
 function releaseCrypto(
     address receiver,
     uint256 quantity,
@@ -374,7 +374,7 @@ function releaseCrypto(
 ) external {
     // Check if the function is called by the address that created the sellOffer or sellTrade
     require(
-        msg.sender == offers[offerId].owner || msg.sender == trades[tradeId].sender,
+        msg.sender == offers[offerId].owner && offers[offerId].offerType == OfferType.Sell|| msg.sender == trades[tradeId].sender,
         "Only the creator of the sellOffer or sellTrade can call this function"
     );
 
@@ -391,10 +391,11 @@ function releaseCrypto(
 
     // Update the account balances
     Account storage senderAccount = accounts[trades[tradeId].sender];
-    Account storage receiverAccount = accounts[receiver];
+    // Account storage receiverAccount = accounts[receiver];
     senderAccount.balance[token] -= quantity;
-    receiverAccount.balance[token] += quantity;
-
+    // receiverAccount.balance[token] += quantity;
+//confirm if receiver balence can be updated given funds sent directly to their EOA;
+   
     // Update the releasedCrypto bool
     releasedCrypto = true;
 
@@ -409,7 +410,30 @@ function releaseCrypto(
     IERC20(token).transfer(receiver, quantity);
 }
 
+//function receiveCrypto
+function receiveCrypto(
+    address receiver,
+    uint256 quantity,
+    address token,
+    uint256 tradeId,
+     uint256 offerId    
+) external {
+    // Check if the function is called by the address that created the buyOffer or buyTrade
+    require(
+        msg.sender == offers[offerId].owner && offers[offerId].offerType == OfferType.Buy || msg.sender == trades[tradeId].receiver,
+        "Only the creator of the buyOffer or buyTrade can call this function"
+    );
+    // Update the receivedCrypto bool
+    receivedCrypto = true;
 
+    // Add the trade to accountToTrades mapping
+    accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
+    accountToTrades[receiver].push(trades[tradeId]);
+
+    // Emit an event to indicate that the crypto has been released
+    emit CryptoReceived(tradeId, receiver, quantity, token);
+    
+}
     function closeOffer(uint256 _offerId) external {
         // Checking if the offer exists
         require(offers[_offerId].offerId == _offerId, "Offer does not exist");
