@@ -103,6 +103,14 @@ interface IMarketplace {
         uint256 quantity,
         address receiver
     );
+    
+    event CryptoReceived(
+        uint256 indexed tradeId,
+        address token,
+        uint256 quantity,
+        address receiver
+    );
+
     // Event to emit when the marketplace fee is changed
     event MarketplaceFeeChanged(uint256 newFee);
     // This event will be emitted when a user withdraws tokens
