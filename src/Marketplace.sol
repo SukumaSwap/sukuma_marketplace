@@ -205,16 +205,20 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         // Check if the trade type is Buy
         require(trade.tradeType == TradeType.Buy, "TradeType must be Buy");
 
+//commented out
+
         // Fetch the min and max quantity
-        (uint256 minQuantity, uint256 maxQuantity) = getQuantity(tradeId);
+        // (uint256 minQuantity, uint256 maxQuantity) = getQuantity(tradeId);
 
         // Check if the trade quantity is within the acceptable range
-        require(
-            trade.quantity > 0 &&
-                trade.quantity >= minQuantity &&
-                trade.quantity <= maxQuantity,
-            "Trade quantity is out of range"
-        );
+    //    commented out line 212 to 218
+
+        // require(
+        //     trade.quantity > 0 &&
+        //         trade.quantity >= minQuantity &&
+        //         trade.quantity <= maxQuantity,
+        //     "Trade quantity is out of range"
+        // );
 
         // Update the trade status to Completed
         trade.status = TradeStatus.Completed;
@@ -229,11 +233,11 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
     }
 
     // Placeholder function to return min and max quantity
-    function getQuantity(
-        uint256 tradeId
-    ) internal pure returns (uint256, uint256) {
-        return (1, 100);
-    }
+    // function getQuantity(
+    //     uint256 tradeId
+    // ) internal pure returns (uint256, uint256) {
+    //     return (1, 100);
+    // }
 
     function createSellTrade(
         uint256 orderId,
@@ -488,6 +492,7 @@ function receiveCrypto(
         accounts[accountAddress].blocks += 1;
     }
 }
+
 //Recommendations:
 
 // 1. Check the return value of `transferFrom` function in `deposit` function.
