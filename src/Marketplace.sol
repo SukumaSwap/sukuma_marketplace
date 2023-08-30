@@ -41,8 +41,10 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
 
 
     // Initializer - replaces the constructor when using the upgradeable pattern
-    function initialize() external initializer {
+    function initialize(address _pricefeedAddress) external initializer {
         __Ownable_init();
+        pricefeed = Pricefeed(_pricefeedAddress);
+        
     }
 
     // Modifier
