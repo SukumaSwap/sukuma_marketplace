@@ -11,6 +11,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import {IMarketplace} from "@contracts/IMarketplace.sol";
 
+import "./Pricefeed.sol";
+   
 contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     // Variables
     uint256 private marketplaceFee;
@@ -95,6 +97,7 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         uint256 _offerRate,
         string[] memory _acceptedCurrency,
         string[] memory _paymentMethods
+
     ) external returns (uint256 offerId) {
         require(_token != address(0), "_token address cannot be zero");
         require(_quantity > 0, "_quantity must be greater than zero");
@@ -495,11 +498,12 @@ function receiveCrypto(
 
 //Recommendations:
 
-// 1. Check the return value of `transferFrom` function in `deposit` function.
-// 2. Use the Checks-Effects-Interactions pattern in `withdraw` function.
-// 3. Add necessary input validation in your functions.
-// 4. Use modifiers to restrict access to functions.
-// 5. Emit events in all state-changing functions.
-// 6. Remove redundancy from your contract.
-// 7. Optimize gas usage where possible.
-// 8. Update your contract to use the latest functions provided by OpenZeppelin contracts.
+// 1. Check the return value of `transferFrom` function in `deposit` function.[x]
+// 2. Use the Checks-Effects-Interactions pattern in `withdraw` function.[x]
+// 3. Add necessary input validation in your functions.[x]
+// 4. Use modifiers to restrict access to functions.[x]
+// 5. Emit events in all state-changing functions.[x]
+// 6. Remove redundancy from your contract.[x]
+// 7. Optimize gas usage where possible.[x]
+// 8. Update your contract to use the latest functions provided by OpenZeppelin contracts.[x]
+// 9.Function to getTradeQuantity [*]
