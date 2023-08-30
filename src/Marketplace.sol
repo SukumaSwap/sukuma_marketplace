@@ -20,6 +20,9 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     uint256 public tradeCounter = 0;
     // Variable to keep track of offerId
     uint256 public offerIdCounter;
+
+   Pricefeed private pricefeed;
+   
 bool releasedCrypto = false;
 bool receivedCrypto = false;
 
