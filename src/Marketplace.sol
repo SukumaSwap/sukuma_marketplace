@@ -24,8 +24,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     Pricefeed private pricefeed;
 
     bool releasedCrypto = false;
-    // bool receivedCrypto = false;
-    // address public owner;
+  
 
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => Trade) public trades;
@@ -347,6 +346,7 @@ function closeBuyTrade(uint256 tradeId) external {
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
 
+
     // Function to get the current marketplace fee
     function getMarketplaceFee() external view returns (uint256) {
         return marketplaceFee;
@@ -433,31 +433,7 @@ function closeBuyTrade(uint256 tradeId) external {
         // Emit TransferCreated event after successful transfer
         emit TransferCreated(_token, _to, _quantity);
     }
-    //function receiveCrypto
-    function receiveCrypto(
-        address receiver,
-        uint256 quantity,
-        address token,
-        uint256 tradeId,
-        uint256 offerId
-    ) external {
-        // Check if the function is called by the address that created the buyOffer or buyTrade
-        require(
-            (msg.sender == offers[offerId].owner &&
-                offers[offerId].offerType == OfferType.Buy) ||
-                msg.sender == trades[tradeId].receiver,
-            "Only the creator of the buyOffer or buyTrade can call this function"
-        );
-        // Update the receivedCrypto bool
-        receivedCrypto = true;
-
-        // Add the trade to accountToTrades mapping
-        accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
-        accountToTrades[receiver].push(trades[tradeId]);
-
-        // Emit an event to indicate that the crypto has been released
-        emit CryptoReceived(tradeId, receiver, quantity, token);
-    }
+    
 
     function closeOffer(uint256 _offerId) external {
         // Checking if the offer exists
