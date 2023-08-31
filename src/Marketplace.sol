@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IMarketplace} from "@contracts/IMarketplace.sol";
 
 import "./Pricefeed.sol";
-   
+
 contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     // Variables
     uint256 private marketplaceFee;
@@ -21,10 +21,10 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     // Variable to keep track of offerId
     uint256 public offerIdCounter;
 
-   Pricefeed private pricefeed;
-   
-bool releasedCrypto = false;
-bool receivedCrypto = false;
+    Pricefeed private pricefeed;
+
+    bool releasedCrypto = false;
+    bool receivedCrypto = false;
 
     // address public owner;
     mapping(uint256 => Offer) public offers;
@@ -37,14 +37,12 @@ bool receivedCrypto = false;
     mapping(uint256 => address) private idToAddress;
     mapping(uint256 => Trade[]) public offerIdToTrades; //mapping of offerId to associatedarray of Trade
     mapping(uint256 => Offer[]) public accountIdToOffers; //mapping of AccountId to All Offers Created by that Account.
-mapping(address => Trade[]) public accountToTrades;//account address with an array of Trade objects
-
+    mapping(address => Trade[]) public accountToTrades; //account address with an array of Trade objects
 
     // Initializer - replaces the constructor when using the upgradeable pattern
     function initialize(address _pricefeedAddress) external initializer {
         __Ownable_init();
         pricefeed = Pricefeed(_pricefeedAddress);
-        
     }
 
     // Modifier
@@ -102,7 +100,6 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         uint256 _offerRate,
         string[] memory _acceptedCurrency,
         string[] memory _paymentMethods
-
     ) external returns (uint256 offerId) {
         require(_token != address(0), "_token address cannot be zero");
         require(_quantity > 0, "_quantity must be greater than zero");
@@ -124,8 +121,8 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
 
         // incrementing the offerIdCounter for each new offer
         offerIdCounter++;
-// Getting the account ID of the owner
-    uint256 accountId = accounts[msg.sender].accountId;
+        // Getting the account ID of the owner
+        uint256 accountId = accounts[msg.sender].accountId;
         // Creating a new offer
         offerId = offerIdCounter;
 
@@ -147,7 +144,7 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         // Saving the offer in offers mapping
         offers[offerId] = newOffer;
         // Adding the offer to accountIdToOffers mapping
-    accountIdToOffers[accountId].push(newOffer);
+        accountIdToOffers[accountId].push(newOffer);
 
         emit OfferCreated(
             offerId,
@@ -159,49 +156,67 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         );
     }
 
-    function createBuyTrade(
-        uint256 orderId,
-        uint256 quantity,
-        address receiver,
-        address sender,
-        address token,
-        TradeType tradeType,
-        uint64 amount
-    ) external {
-        //input validators
-        require(token != address(0), "token address cannot be zero");
-        require(quantity > 0, "quantity must be greater than zero");
-        // Require that the tradingType is Buy
-        require(tradeType == TradeType.Buy, "TradeType must be Buy");
-        // Require that the offerId exists
-        require(offers[orderId].offerId == orderId, "OfferId does not exist");
+    //function to create buy trade
+    function createBuyTrade(uint256 offerId, uint256 quantity) external {
+        // Input validators
+        require(quantity > 0, "Quantity must be greater than zero");
+
+        // Get the offer associated with the offerId
+        Offer memory offer = offers[offerId];
+
+        // Check if the offer exists
+        require(offer.offerId == offerId, "OfferId does not exist");
+
+        // Check if the token is the same as the offer token
+        require(
+            offer.token == msg.sender,
+            "Token address must be the same as the offer token"
+        );
+
+        // Check if the offer type is Sell
+        require(offer.offerType == OfferType.Sell, "Offer type must be Sell");
+
+        // Get the rate of the offer
+        uint256 rate = offers[offerId].offerRate;
+
+        // Calculate the trade amount
+        uint256 convertedPrice = pricefeed.getPrice(
+            quantity,
+            offer.token,
+            "USD"
+        );
+        uint256 tradeAmount = convertedPrice.mul(100 + rate).div(100);
 
         // Autogenerate tradeId
         tradeCounter++;
         uint256 tradeId = tradeCounter;
+
         // Create a new trade
         Trade memory trade = Trade({
             tradeId: tradeId,
-            orderId: orderId,
+            orderId: offerId,
             status: TradeStatus.Active,
             quantity: quantity,
-            receiver: receiver,
-            sender: sender,
-            token: token,
+            receiver: msg.sender,
+            sender: offer.owner,
+            token: offer.token,
             tradeType: TradeType.Buy,
-            amount: amount
+            amount: tradeAmount
         });
+
         // Store the trade
         trades[tradeId] = trade;
-        // Add the trade to the offerIdToTrades mapping
-        offerIdToTrades[orderId].push(trade);
-        // Add the trade to the accountToTrades mapping for both sender and receiver
-    accountToTrades[sender].push(trade);
-    accountToTrades[receiver].push(trade);
 
-        emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
+        // Add the trade to the offerIdToTrades mapping
+        offerIdToTrades[offerId].push(trade);
+
+        // Add the trade to the accountToTrades mapping for both sender and receiver
+        accountToTrades[offer.owner].push(trade);
+        accountToTrades[msg.sender].push(trade);
+
+        emit TradeCreated(tradeId, offerId, TradeType.Buy, TradeStatus.Active);
     }
-    
+
     //function to closeBuyTrde ,only be called by seller of Saleoffer
     function closeBuyTrade(uint256 tradeId) external {
         // Fetch the trade from the mapping
@@ -212,21 +227,6 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
 
         // Check if the trade type is Buy
         require(trade.tradeType == TradeType.Buy, "TradeType must be Buy");
-
-//commented out
-
-        // Fetch the min and max quantity
-        // (uint256 minQuantity, uint256 maxQuantity) = getQuantity(tradeId);
-
-        // Check if the trade quantity is within the acceptable range
-    //    commented out line 212 to 218
-
-        // require(
-        //     trade.quantity > 0 &&
-        //         trade.quantity >= minQuantity &&
-        //         trade.quantity <= maxQuantity,
-        //     "Trade quantity is out of range"
-        // );
 
         // Update the trade status to Completed
         trade.status = TradeStatus.Completed;
@@ -239,14 +239,6 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
             TradeStatus.Completed
         );
     }
-
-    // Placeholder function to return min and max quantity
-    // function getQuantity(
-    //     uint256 tradeId
-    // ) internal pure returns (uint256, uint256) {
-    //     return (1, 100);
-    // }
-
     function createSellTrade(
         uint256 orderId,
         uint256 quantity,
@@ -282,8 +274,8 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         // Add the trade to the offerIdToTrades mapping
         offerIdToTrades[orderId].push(trade);
         // Add the trade to the accountToTrades mapping for both sender and receiver
-    accountToTrades[sender].push(trade);
-    accountToTrades[receiver].push(trade);
+        accountToTrades[sender].push(trade);
+        accountToTrades[receiver].push(trade);
 
         emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
     }
@@ -344,7 +336,7 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         return accounts[_account].balance[_token];
     }
 
-//function to transfer crypto
+    //function to transfer crypto
     function transfer(address _token, uint256 _quantity, address _to) external {
         require(_quantity > 0, "Transfer quantity must be greater than zero");
         require(_to != address(0), "Receiver address cannot be zero address");
@@ -375,77 +367,90 @@ mapping(address => Trade[]) public accountToTrades;//account address with an arr
         emit TransferCreated(_token, _to, _quantity);
     }
 
-//function releaseCrypto   
-function releaseCrypto(
-    address receiver,
-    uint256 quantity,
-    address token,
-    uint256 tradeId,
-     uint256 offerId,
-    uint256 balance
-) external {
-    // Check if the function is called by the address that created the sellOffer or sellTrade
-    require(
-        msg.sender == offers[offerId].owner && offers[offerId].offerType == OfferType.Sell|| msg.sender == trades[tradeId].sender,
-        "Only the creator of the sellOffer or sellTrade can call this function"
-    );
+    //function releaseCrypto
+    function releaseCrypto(
+        address receiver,
+        uint256 quantity,
+        address token,
+        uint256 tradeId,
+        uint256 offerId,
+        uint256 balance
+    ) external {
+        // Check if the function is called by the address that created the sellOffer or sellTrade
+        require(
+            (msg.sender == offers[offerId].owner &&
+                offers[offerId].offerType == OfferType.Sell) ||
+                msg.sender == trades[tradeId].sender,
+            "Only the creator of the sellOffer or sellTrade can call this function"
+        );
 
-    // Check if the parameters match the trade or offer
-    require(receiver == trades[tradeId].receiver, "Receiver address does not match the trade");
-    require(quantity == trades[tradeId].quantity, "Quantity does not match the trade");
-    require(token == trades[tradeId].token, "Token address does not match the trade");
+        // Check if the parameters match the trade or offer
+        require(
+            receiver == trades[tradeId].receiver,
+            "Receiver address does not match the trade"
+        );
+        require(
+            quantity == trades[tradeId].quantity,
+            "Quantity does not match the trade"
+        );
+        require(
+            token == trades[tradeId].token,
+            "Token address does not match the trade"
+        );
 
-    // Check if crypto has already been released
-    require(!releasedCrypto, "Crypto has already been released");
+        // Check if crypto has already been released
+        require(!releasedCrypto, "Crypto has already been released");
 
-    // Check if the sender has sufficient balance
-    require(balance >= quantity, "Insufficient balance");
+        // Check if the sender has sufficient balance
+        require(balance >= quantity, "Insufficient balance");
 
-    // Update the account balances
-    Account storage senderAccount = accounts[trades[tradeId].sender];
-    // Account storage receiverAccount = accounts[receiver];
-    senderAccount.balance[token] -= quantity;
-    // receiverAccount.balance[token] += quantity;
-//confirm if receiver balence can be updated given funds sent directly to their EOA;
-   
-    // Update the releasedCrypto bool
-    releasedCrypto = true;
+        // Update the account balances
+        Account storage senderAccount = accounts[trades[tradeId].sender];
+        // Account storage receiverAccount = accounts[receiver];
+        senderAccount.balance[token] -= quantity;
+        // receiverAccount.balance[token] += quantity;
+        //confirm if receiver balence can be updated given funds sent directly to their EOA;
 
-    // Add the trade to accountToTrades mapping
-    accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
-    accountToTrades[receiver].push(trades[tradeId]);
+        // Update the releasedCrypto bool
+        releasedCrypto = true;
 
-    // Emit an event to indicate that the crypto has been released
-    emit CryptoReleased(tradeId, receiver, quantity, token);
+        // Add the trade to accountToTrades mapping
+        accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
+        accountToTrades[receiver].push(trades[tradeId]);
 
-    // Transfer the crypto to the receiver's address
-    IERC20(token).transfer(receiver, quantity);
-}
+        // Emit an event to indicate that the crypto has been released
+        emit CryptoReleased(tradeId, receiver, quantity, token);
 
-//function receiveCrypto
-function receiveCrypto(
-    address receiver,
-    uint256 quantity,
-    address token,
-    uint256 tradeId,
-     uint256 offerId    
-) external {
-    // Check if the function is called by the address that created the buyOffer or buyTrade
-    require(
-        msg.sender == offers[offerId].owner && offers[offerId].offerType == OfferType.Buy || msg.sender == trades[tradeId].receiver,
-        "Only the creator of the buyOffer or buyTrade can call this function"
-    );
-    // Update the receivedCrypto bool
-    receivedCrypto = true;
+        // Transfer the crypto to the receiver's address
+        IERC20(token).transfer(receiver, quantity);
+    }
 
-    // Add the trade to accountToTrades mapping
-    accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
-    accountToTrades[receiver].push(trades[tradeId]);
+    //function receiveCrypto
+    function receiveCrypto(
+        address receiver,
+        uint256 quantity,
+        address token,
+        uint256 tradeId,
+        uint256 offerId
+    ) external {
+        // Check if the function is called by the address that created the buyOffer or buyTrade
+        require(
+            (msg.sender == offers[offerId].owner &&
+                offers[offerId].offerType == OfferType.Buy) ||
+                msg.sender == trades[tradeId].receiver,
+            "Only the creator of the buyOffer or buyTrade can call this function"
+        );
+        // Update the receivedCrypto bool
+        receivedCrypto = true;
 
-    // Emit an event to indicate that the crypto has been released
-    emit CryptoReceived(tradeId, receiver, quantity, token);
-    
-}
+        // Add the trade to accountToTrades mapping
+        accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
+        accountToTrades[receiver].push(trades[tradeId]);
+
+        // Emit an event to indicate that the crypto has been released
+        emit CryptoReceived(tradeId, receiver, quantity, token);
+    }
+
     function closeOffer(uint256 _offerId) external {
         // Checking if the offer exists
         require(offers[_offerId].offerId == _offerId, "Offer does not exist");
@@ -501,6 +506,26 @@ function receiveCrypto(
     }
 }
 
+//todos
+// 1.createBuytrade ,subtract marketplacefee
+//2.closeBuyTrade(tradeId) :-change receivedCrypto =true;Trade.Status=Complete
+// -after Sell offer created
+// i) Buy makes trde
+// ii)buyer sends money
+// iii)Seller releaseCrypto
+// iv)buyer close trade; received crypto=true,trade.status=complete
+//3.createSellTrade,add marketplace fee,
+//4.closeSellTrade(tradeId); 
+-after Buy order created
+// i)Seller makes saleTrade
+// ii)Buyer/receiver releasesCrypto
+// iii)Seller releaseCrypto() updates releaseCrypt=true
+// iv)seller closeSellTrade i.e 
+    //  -checkif  releaseCrypto=true;
+    //  -updates tradeStatus=complete
+//5.relaseCrypto
+//Note users shall ne inputing token quantity only system calculates for them price
+
 //Recommendations:
 
 // 1. Check the return value of `transferFrom` function in `deposit` function.[x]
@@ -512,3 +537,5 @@ function receiveCrypto(
 // 7. Optimize gas usage where possible.[x]
 // 8. Update your contract to use the latest functions provided by OpenZeppelin contracts.[x]
 // 9.Function to getTradeQuantity [*]
+// 10.check working of priceFeed initialized on function to initialize.
+//11/Make sure to pass the address of the deployed Pricefeed contract when calling the createBuyTrade function.
