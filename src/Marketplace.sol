@@ -516,7 +516,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
 // iv)buyer close trade; received crypto=true,trade.status=complete
 //3.createSellTrade,add marketplace fee,
 //4.closeSellTrade(tradeId); 
--after Buy order created
+// -after Buy order created
 // i)Seller makes saleTrade
 // ii)Buyer/receiver releasesCrypto
 // iii)Seller releaseCrypto() updates releaseCrypt=true
