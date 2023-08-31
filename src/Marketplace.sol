@@ -24,9 +24,9 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
     Pricefeed private pricefeed;
 
     bool releasedCrypto = false;
-    bool receivedCrypto = false;
-
+    // bool receivedCrypto = false;
     // address public owner;
+
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => Trade) public trades;
     mapping(uint256 => Transfer) public transfers;
@@ -216,7 +216,62 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
 
         emit TradeCreated(tradeId, offerId, TradeType.Buy, TradeStatus.Active);
     }
+//function releaseCrypto
+    function releaseCrypto(uint256 tradeId) external {
+          // Fetch the required parameters from the createBuyTrade function
+    uint256 quantity = trades[tradeId].quantity;
+    address token = trades[tradeId].token;
+    uint256 offerId = trades[tradeId].orderId;
+    uint256 balance = accounts[trades[tradeId].sender].balance[token];
+        // Check if the function is called by the address that created the sellOffer or sellTrade
+        require(
+            (msg.sender == offers[offerId].owner &&
+                offers[offerId].offerType == OfferType.Sell) ||
+                msg.sender == trades[tradeId].sender,
+            "Only the creator of the sellOffer or sellTrade can call this function"
+        );
 
+        // Check if the parameters match the trade or offer
+        require(
+            receiver == trades[tradeId].receiver,
+            "Receiver address does not match the trade"
+        );
+        require(
+            quantity == trades[tradeId].quantity,
+            "Quantity does not match the trade"
+        );
+        require(
+            token == trades[tradeId].token,
+            "Token address does not match the trade"
+        );
+
+        // Check if crypto has already been released
+        require(!releasedCrypto, "Crypto has already been released");
+
+        // Check if the sender has sufficient balance
+        require(balance >= quantity, "Insufficient balance");
+
+        // Update the account balances
+        Account storage senderAccount = accounts[trades[tradeId].sender];
+        // Account storage receiverAccount = accounts[receiver];
+        senderAccount.balance[token] -= quantity;
+        // receiverAccount.balance[token] += quantity;
+        //confirm if receiver balence can be updated given funds sent directly to their EOA;
+
+        // Update the releasedCrypto bool
+        releasedCrypto = true;
+
+        // Add the trade to accountToTrades mapping
+        accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
+        accountToTrades[receiver].push(trades[tradeId]);
+
+        // Emit an event to indicate that the crypto has been released
+        emit CryptoReleased(tradeId, receiver, quantity, token);
+
+        // Transfer the crypto to the receiver's address
+        IERC20(token).transfer(receiver, quantity);
+    }
+    
     //function to closeBuyTrde ,only be called by seller of Saleoffer
     function closeBuyTrade(uint256 tradeId) external {
         // Fetch the trade from the mapping
@@ -239,6 +294,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
             TradeStatus.Completed
         );
     }
+
     function createSellTrade(
         uint256 orderId,
         uint256 quantity,
@@ -366,65 +422,6 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         // Emit TransferCreated event after successful transfer
         emit TransferCreated(_token, _to, _quantity);
     }
-
-    //function releaseCrypto
-    function releaseCrypto(
-        address receiver,
-        uint256 quantity,
-        address token,
-        uint256 tradeId,
-        uint256 offerId,
-        uint256 balance
-    ) external {
-        // Check if the function is called by the address that created the sellOffer or sellTrade
-        require(
-            (msg.sender == offers[offerId].owner &&
-                offers[offerId].offerType == OfferType.Sell) ||
-                msg.sender == trades[tradeId].sender,
-            "Only the creator of the sellOffer or sellTrade can call this function"
-        );
-
-        // Check if the parameters match the trade or offer
-        require(
-            receiver == trades[tradeId].receiver,
-            "Receiver address does not match the trade"
-        );
-        require(
-            quantity == trades[tradeId].quantity,
-            "Quantity does not match the trade"
-        );
-        require(
-            token == trades[tradeId].token,
-            "Token address does not match the trade"
-        );
-
-        // Check if crypto has already been released
-        require(!releasedCrypto, "Crypto has already been released");
-
-        // Check if the sender has sufficient balance
-        require(balance >= quantity, "Insufficient balance");
-
-        // Update the account balances
-        Account storage senderAccount = accounts[trades[tradeId].sender];
-        // Account storage receiverAccount = accounts[receiver];
-        senderAccount.balance[token] -= quantity;
-        // receiverAccount.balance[token] += quantity;
-        //confirm if receiver balence can be updated given funds sent directly to their EOA;
-
-        // Update the releasedCrypto bool
-        releasedCrypto = true;
-
-        // Add the trade to accountToTrades mapping
-        accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
-        accountToTrades[receiver].push(trades[tradeId]);
-
-        // Emit an event to indicate that the crypto has been released
-        emit CryptoReleased(tradeId, receiver, quantity, token);
-
-        // Transfer the crypto to the receiver's address
-        IERC20(token).transfer(receiver, quantity);
-    }
-
     //function receiveCrypto
     function receiveCrypto(
         address receiver,
@@ -538,4 +535,4 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
 // 8. Update your contract to use the latest functions provided by OpenZeppelin contracts.[x]
 // 9.Function to getTradeQuantity [*]
 // 10.check working of priceFeed initialized on function to initialize.
-//11/Make sure to pass the address of the deployed Pricefeed contract when calling the createBuyTrade function.
+//11.Make sure to pass the address of the deployed Pricefeed contract when calling the createBuyTrade function.
