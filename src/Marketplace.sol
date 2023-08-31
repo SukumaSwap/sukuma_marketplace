@@ -271,29 +271,40 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         // Transfer the crypto to the receiver's address
         IERC20(token).transfer(receiver, quantity);
     }
-    
-    //function to closeBuyTrde ,only be called by seller of Saleoffer
-    function closeBuyTrade(uint256 tradeId) external {
-        // Fetch the trade from the mapping
-        Trade storage trade = trades[tradeId];
 
-        // Check if the trade exists
-        require(trade.orderId != 0, "Trade does not exist");
+   
+// Function to closeBuyTrade, can only be called by the creator of buyTrade
+function closeBuyTrade(uint256 tradeId) external {
+    // Fetch the trade from the mapping
+    Trade storage trade = trades[tradeId];
 
-        // Check if the trade type is Buy
-        require(trade.tradeType == TradeType.Buy, "TradeType must be Buy");
+    // Check if the trade exists
+    require(trade.orderId != 0, "Trade does not exist");
 
-        // Update the trade status to Completed
-        trade.status = TradeStatus.Completed;
+    // Check if the trade type is Buy
+    require(trade.tradeType == TradeType.Buy, "TradeType must be Buy");
 
-        // Emit the TradeClosed event
-        emit TradeClosed(
-            tradeId,
-            trade.orderId,
-            trade.tradeType,
-            TradeStatus.Completed
-        );
-    }
+    // Check if the releaseCrypto function was called by the offer owner and offerType is Sell
+    require(
+        msg.sender == offers[trade.orderId].owner &&
+        offers[trade.orderId].offerType == OfferType.Sell,
+        "ReleaseCrypto function not called by offer owner or offerType is not Sell"
+    );
+
+    // Check if the crypto has been released
+    require(releasedCrypto, "Crypto has not been released");
+
+    // Update the trade status to Completed
+    trade.status = TradeStatus.Completed;
+
+    // Emit the TradeClosed event
+    emit TradeClosed(
+        tradeId,
+        trade.orderId,
+        trade.tradeType,
+        TradeStatus.Completed
+    );
+}
 
     function createSellTrade(
         uint256 orderId,
