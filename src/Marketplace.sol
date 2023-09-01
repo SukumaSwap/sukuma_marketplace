@@ -304,47 +304,71 @@ function closeBuyTrade(uint256 tradeId) external {
         TradeStatus.Completed
     );
 }
+//function to createSell
+ function createSellTrade(uint256 offerId, uint256 quantity) external {
+        // Input validators
+        require(quantity > 0, "Quantity must be greater than zero");
 
-    function createSellTrade(
-        uint256 orderId,
-        uint256 quantity,
-        address receiver,
-        address sender,
-        address token,
-        TradeType tradeType,
-        uint64 amount
-    ) external {
-        require(token != address(0), "token address cannot be zero");
-        require(quantity > 0, "quantity must be greater than zero");
-        // Require that the tradingType is Buy
-        require(tradeType == TradeType.Sell, "TradeType must be Sell");
-        // Require that the offerId exists
-        require(offers[orderId].offerId == orderId, "OfferId does not exist");
+        // Get the offer associated with the offerId
+        Offer memory offer = offers[offerId];
+
+        // Check if the offer exists
+        require(offer.offerId == offerId, "OfferId does not exist");
+
+        // Check if the token is the same as the offer token
+        require(
+            offer.token == msg.sender,
+            "Token address must be the same as the offer token"
+        );
+
+        // Check if the offer type is Buy
+        require(offer.offerType == OfferType.Buy, "Offer type must be Buy");
+
+        // Get the rate of the offer
+        uint256 rate = offers[offerId].offerRate;
+
+        // Calculate the trade amount
+        uint256 convertedPrice = pricefeed.getPrice(
+            quantity,
+            offer.token,
+            "USD"
+        );
+        uint256 tradeAmount = convertedPrice.mul(100 + rate).div(100);
+ // Check if the sender has adequate balance to cover the trade amount + gas fee
+    require(
+        checkBalance(msg.sender, offer.token) >= tradeAmount.add(gasFee),
+        "Insufficient balance to cover the trade amount and gas fee"
+    );
         // Autogenerate tradeId
         tradeCounter++;
         uint256 tradeId = tradeCounter;
+
         // Create a new trade
         Trade memory trade = Trade({
             tradeId: tradeId,
-            orderId: orderId,
+            orderId: offerId,
             status: TradeStatus.Active,
             quantity: quantity,
-            receiver: receiver,
-            sender: sender,
-            token: token,
+            receiver: offer.owner ,
+            sender:msg.sender ,
+            token: offer.token,
             tradeType: TradeType.Sell,
-            amount: amount
+            amount: tradeAmount
         });
+
         // Store the trade
         trades[tradeId] = trade;
-        // Add the trade to the offerIdToTrades mapping
-        offerIdToTrades[orderId].push(trade);
-        // Add the trade to the accountToTrades mapping for both sender and receiver
-        accountToTrades[sender].push(trade);
-        accountToTrades[receiver].push(trade);
 
-        emit TradeCreated(tradeId, orderId, tradeType, TradeStatus.Active);
+        // Add the trade to the offerIdToTrades mapping
+        offerIdToTrades[offerId].push(trade);
+
+        // Add the trade to the accountToTrades mapping for both sender and receiver
+        accountToTrades[offer.owner].push(trade);
+        accountToTrades[msg.sender].push(trade);
+
+        emit TradeCreated(tradeId, offerId, TradeType.Buy, TradeStatus.Active);
     }
+  
 
 
     // Function to get the current marketplace fee
@@ -398,7 +422,7 @@ function closeBuyTrade(uint256 tradeId) external {
     function checkBalance(
         address _account,
         address _token
-    ) external view returns (uint256) {
+    ) public view returns (uint256) {
         // Return the balance of the account
         return accounts[_account].balance[_token];
     }
@@ -509,6 +533,8 @@ function closeBuyTrade(uint256 tradeId) external {
     //  -updates tradeStatus=complete
 //5.relaseCrypto
 //Note users shall ne inputing token quantity only system calculates for them price
+//6. change acess modifier of checkBalance to public since used on createSelltrade.
+//7. import and ing=herit pricefeed contractwell.
 
 //Recommendations:
 
