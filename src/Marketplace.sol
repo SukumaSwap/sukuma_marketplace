@@ -363,7 +363,38 @@ function closeBuyTrade(uint256 tradeId) external {
 
         emit TradeCreated(tradeId, offerId, TradeType.Buy, TradeStatus.Active);
     }
-  //function
+  //function to close sellTrade ,called by one who created the sellTrade
+  function closeSellTrade(uint256 tradeId) external {
+    // Fetch the trade from the mapping
+    Trade storage trade = trades[tradeId];
+
+    // Check if the trade exists
+    require(trade.orderId != 0, "Trade does not exist");
+
+    // Check if the trade type is Sell
+    require(trade.tradeType == TradeType.Sell, "TradeType must be Sell");
+
+    // Check if the releaseCrypto function was called by the address that created the sellTrade and offerType is Buy
+    require(
+         msg.sender == trades[tradeId].sender &&
+        offers[trade.orderId].offerType == OfferType.Buy,
+        "ReleaseCrypto function not called by address that created the sellTrade or offerType is not Buy"
+    );
+
+    // Check if the crypto has been released
+    require(releasedCrypto, "Crypto has not been released");
+
+    // Update the trade status to Completed
+    trade.status = TradeStatus.Completed;
+
+    // Emit the TradeClosed event
+    emit TradeClosed(
+        tradeId,
+        trade.orderId,
+        trade.tradeType,
+        TradeStatus.Completed
+    );
+}
 
 
     // Function to get the current marketplace fee
