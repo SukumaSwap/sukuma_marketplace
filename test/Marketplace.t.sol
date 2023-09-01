@@ -20,18 +20,15 @@ contract MarketplaceTest is BaseTest {
     //   7.createSellTrade.
     //   8.closeSellTrade
     //   9.releaseCrypto.
-    //   10.receiveCrypto
-    //   11.getTradeQuantity.
-    //   12.getTradeAmount.
-    //   13.getMarketplaceFee. [x]
-    //   14.setMarketplaceFee  [x]
-    //   15.deposit.           [x]
-    //   16.withdraw.          [x]
-    //   17.checkBalance.      [x]
-    //   18.transfer.          [x]
-    //   19.like.              [x]
-    //   20.dislike.           [x]
-    //   21.blockAccount.      [*]
+    //   10.getMarketplaceFee. [x]
+    //   11.setMarketplaceFee  [x]
+    //   12.deposit.           [x]
+    //   13.withdraw.          [x]
+    //   14.checkBalance.      [x]
+    //   15.transfer.          [x]
+    //   16.like.              [x]
+    //   17.dislike.           [x]
+    //   18.blockAccount.      [*]
 
     //test for createAccount
     function testFuzz_CreateAccount(address caller) public {

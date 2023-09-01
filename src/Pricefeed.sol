@@ -4,8 +4,13 @@ pragma solidity ^0.8.20;  // Specify the Solidity compiler version.
 
 // import "./SafeMath.sol";  // Import the SafeMath library.
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";  // Import the Chainlink Price Feed interface.
+//old wrong one
+// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";  // Import the Chainlink Price Feed interface.
 
+// installed path
+// import lib/foundry-chainlink-toolkit
+
+import "foundry-chainlink-toolkit";
 contract Pricefeed {
 
     using SafeMath for uint256;  // Use the SafeMath library for safe mathematical operations.

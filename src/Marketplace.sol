@@ -542,9 +542,8 @@ function closeBuyTrade(uint256 tradeId) external {
 
 //todos
 //Note users shall ne inputing token quantity only system calculates for them price
-//6. change acess modifier of checkBalance to public since used on createSelltrade.
-//7. import and ing=herit pricefeed contractwell.
-
+//1. import and ing=herit pricefeed contractwell.
+//2.test createbuy
 //Recommendations:
 
 // 1. Check the return value of `transferFrom` function in `deposit` function.[x]
