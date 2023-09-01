@@ -255,8 +255,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
         // Account storage receiverAccount = accounts[receiver];
         senderAccount.balance[token] -= quantity;
         // receiverAccount.balance[token] += quantity;
-        //confirm if receiver balence can be updated given funds sent directly to their EOA;
-
+       
         // Update the releasedCrypto bool
         releasedCrypto = true;
 
@@ -334,11 +333,7 @@ function closeBuyTrade(uint256 tradeId) external {
             "USD"
         );
         uint256 tradeAmount = convertedPrice.mul(100 + rate).div(100);
- // Check if the sender has adequate balance to cover the trade amount + gas fee
-    require(
-        checkBalance(msg.sender, offer.token) >= tradeAmount.add(gasFee),
-        "Insufficient balance to cover the trade amount and gas fee"
-    );
+
         // Autogenerate tradeId
         tradeCounter++;
         uint256 tradeId = tradeCounter;
@@ -368,7 +363,7 @@ function closeBuyTrade(uint256 tradeId) external {
 
         emit TradeCreated(tradeId, offerId, TradeType.Buy, TradeStatus.Active);
     }
-  
+  //function
 
 
     // Function to get the current marketplace fee
@@ -422,7 +417,7 @@ function closeBuyTrade(uint256 tradeId) external {
     function checkBalance(
         address _account,
         address _token
-    ) public view returns (uint256) {
+    ) external view returns (uint256) {
         // Return the balance of the account
         return accounts[_account].balance[_token];
     }
