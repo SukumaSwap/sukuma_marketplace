@@ -541,23 +541,6 @@ function closeBuyTrade(uint256 tradeId) external {
 }
 
 //todos
-// 1.createBuytrade ,subtract marketplacefee
-//2.closeBuyTrade(tradeId) :-change receivedCrypto =true;Trade.Status=Complete
-// -after Sell offer created
-// i) Buy makes trde
-// ii)buyer sends money
-// iii)Seller releaseCrypto
-// iv)buyer close trade; received crypto=true,trade.status=complete
-//3.createSellTrade,add marketplace fee,
-//4.closeSellTrade(tradeId); 
-// -after Buy order created
-// i)Seller makes saleTrade
-// ii)Buyer/receiver releasesCrypto
-// iii)Seller releaseCrypto() updates releaseCrypt=true
-// iv)seller closeSellTrade i.e 
-    //  -checkif  releaseCrypto=true;
-    //  -updates tradeStatus=complete
-//5.relaseCrypto
 //Note users shall ne inputing token quantity only system calculates for them price
 //6. change acess modifier of checkBalance to public since used on createSelltrade.
 //7. import and ing=herit pricefeed contractwell.
