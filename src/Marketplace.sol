@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 //necessary imports not yet installed
-import "@openzeppelin/upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/upgradeable/contracts/access/OwnableUpgradeable.sol";
 // Importing OpenZeppelin's ERC20 interface
-import "@openzeppelin/upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -447,7 +447,7 @@ function closeBuyTrade(uint256 tradeId) external {
 
     function checkBalance(
         address _account,
-        address _token
+        address _token  
     ) external view returns (uint256) {
         // Return the balance of the account
         return accounts[_account].balance[_token];
