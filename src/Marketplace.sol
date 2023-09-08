@@ -11,9 +11,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import {IMarketplace} from "@contracts/IMarketplace.sol";
 
-import "./Pricefeed.sol";
-
-contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace {
+import {Pricefeed} from "@contracts/Pricefeed.sol";
+contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace,Pricefeed {
     // Variables
     uint256 private marketplaceFee;
     //variable to count trades
