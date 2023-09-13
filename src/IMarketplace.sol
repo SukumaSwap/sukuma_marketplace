@@ -15,6 +15,7 @@ interface IMarketplace {
         Buy,
         Sell
     }
+    
     enum TradeStatus {
         Active,
         Disputed,

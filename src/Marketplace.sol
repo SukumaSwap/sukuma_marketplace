@@ -422,7 +422,16 @@ function closeBuyTrade(uint256 tradeId) external {
     }
 
     //withdraw function
-    function withdraw(address _token, uint256 quantity) external {
+   function withdraw(address _token, uint256 quantity) external {
+    // Check if the sender is the creator of a sell trade and the trade status is active
+    if (msg.sender == createSellTrade.sender && createSellTrade.status == Status.Active) {
+        revert("Unauthorized access");
+    }
+    // Check if the sender is the creator of a sell offer and the account balance is equal to the minimum offer amount
+    else if (msg.sender == createSellOffer.sender && accounts[msg.sender].balance >= createSellOffer.minAmount) {
+        revert("Unauthorized access");
+    }
+    else {
         // Ensure the user has enough tokens
         require(
             accounts[msg.sender].balance[_token] >= quantity,
@@ -441,6 +450,7 @@ function closeBuyTrade(uint256 tradeId) external {
         // Emit the withdrawal event
         emit Withdrawal(msg.sender, _token, quantity);
     }
+}
 
     function checkBalance(
         address _account,
