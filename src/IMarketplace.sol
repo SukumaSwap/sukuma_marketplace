@@ -15,7 +15,7 @@ interface IMarketplace {
         Buy,
         Sell
     }
-    
+
     enum TradeStatus {
         Active,
         Disputed,
@@ -104,7 +104,7 @@ interface IMarketplace {
         uint256 quantity,
         address receiver
     );
-    
+
     // event CryptoReceived(
     //     uint256 indexed tradeId,
     //     address token,

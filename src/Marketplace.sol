@@ -10,7 +10,13 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IMarketplace} from "@contracts/IMarketplace.sol";
 
 import {Pricefeed} from "@contracts/Pricefeed.sol";
-contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace,Pricefeed {
+
+contract Marketplace is
+    Initializable,
+    OwnableUpgradeable,
+    IMarketplace,
+    Pricefeed
+{
     // Variables
     uint256 private marketplaceFee;
     //variable to count trades
@@ -21,7 +27,6 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace,Pricefee
     Pricefeed private pricefeed;
 
     bool releasedCrypto = false;
-  
 
     mapping(uint256 => Offer) public offers;
     mapping(uint256 => Trade) public trades;
@@ -212,13 +217,14 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace,Pricefee
 
         emit TradeCreated(tradeId, offerId, TradeType.Buy, TradeStatus.Active);
     }
-//function releaseCrypto
+
+    //function releaseCrypto
     function releaseCrypto(uint256 tradeId) external {
-          // Fetch the required parameters from the createBuyTrade function
-    uint256 quantity = trades[tradeId].quantity;
-    address token = trades[tradeId].token;
-    uint256 offerId = trades[tradeId].orderId;
-    uint256 balance = accounts[trades[tradeId].sender].balance[token];
+        // Fetch the required parameters from the createBuyTrade function
+        uint256 quantity = trades[tradeId].quantity;
+        address token = trades[tradeId].token;
+        uint256 offerId = trades[tradeId].orderId;
+        uint256 balance = accounts[trades[tradeId].sender].balance[token];
         // Check if the function is called by the address that created the sellOffer or sellTrade
         require(
             (msg.sender == offers[offerId].owner &&
@@ -252,7 +258,7 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace,Pricefee
         // Account storage receiverAccount = accounts[receiver];
         senderAccount.balance[token] -= quantity;
         // receiverAccount.balance[token] += quantity;
-       
+
         // Update the releasedCrypto bool
         releasedCrypto = true;
 
@@ -267,41 +273,41 @@ contract Marketplace is Initializable, OwnableUpgradeable, IMarketplace,Pricefee
         IERC20(token).transfer(receiver, quantity);
     }
 
-   
-// Function to closeBuyTrade, can only be called by the creator of buyTrade
-function closeBuyTrade(uint256 tradeId) external {
-    // Fetch the trade from the mapping
-    Trade storage trade = trades[tradeId];
+    // Function to closeBuyTrade, can only be called by the creator of buyTrade
+    function closeBuyTrade(uint256 tradeId) external {
+        // Fetch the trade from the mapping
+        Trade storage trade = trades[tradeId];
 
-    // Check if the trade exists
-    require(trade.orderId != 0, "Trade does not exist");
+        // Check if the trade exists
+        require(trade.orderId != 0, "Trade does not exist");
 
-    // Check if the trade type is Buy
-    require(trade.tradeType == TradeType.Buy, "TradeType must be Buy");
+        // Check if the trade type is Buy
+        require(trade.tradeType == TradeType.Buy, "TradeType must be Buy");
 
-    // Check if the releaseCrypto function was called by the offer owner and offerType is Sell
-    require(
-        msg.sender == offers[trade.orderId].owner &&
-        offers[trade.orderId].offerType == OfferType.Sell,
-        "ReleaseCrypto function not called by offer owner or offerType is not Sell"
-    );
+        // Check if the releaseCrypto function was called by the offer owner and offerType is Sell
+        require(
+            msg.sender == offers[trade.orderId].owner &&
+                offers[trade.orderId].offerType == OfferType.Sell,
+            "ReleaseCrypto function not called by offer owner or offerType is not Sell"
+        );
 
-    // Check if the crypto has been released
-    require(releasedCrypto, "Crypto has not been released");
+        // Check if the crypto has been released
+        require(releasedCrypto, "Crypto has not been released");
 
-    // Update the trade status to Completed
-    trade.status = TradeStatus.Completed;
+        // Update the trade status to Completed
+        trade.status = TradeStatus.Completed;
 
-    // Emit the TradeClosed event
-    emit TradeClosed(
-        tradeId,
-        trade.orderId,
-        trade.tradeType,
-        TradeStatus.Completed
-    );
-}
-//function to createSell
- function createSellTrade(uint256 offerId, uint256 quantity) external {
+        // Emit the TradeClosed event
+        emit TradeClosed(
+            tradeId,
+            trade.orderId,
+            trade.tradeType,
+            TradeStatus.Completed
+        );
+    }
+
+    //function to createSell
+    function createSellTrade(uint256 offerId, uint256 quantity) external {
         // Input validators
         require(quantity > 0, "Quantity must be greater than zero");
 
@@ -341,8 +347,8 @@ function closeBuyTrade(uint256 tradeId) external {
             orderId: offerId,
             status: TradeStatus.Active,
             quantity: quantity,
-            receiver: offer.owner ,
-            sender:msg.sender ,
+            receiver: offer.owner,
+            sender: msg.sender,
             token: offer.token,
             tradeType: TradeType.Sell,
             amount: tradeAmount
@@ -360,39 +366,39 @@ function closeBuyTrade(uint256 tradeId) external {
 
         emit TradeCreated(tradeId, offerId, TradeType.Buy, TradeStatus.Active);
     }
-  //function to close sellTrade ,called by one who created the sellTrade
-  function closeSellTrade(uint256 tradeId) external {
-    // Fetch the trade from the mapping
-    Trade storage trade = trades[tradeId];
 
-    // Check if the trade exists
-    require(trade.orderId != 0, "Trade does not exist");
+    //function to close sellTrade ,called by one who created the sellTrade
+    function closeSellTrade(uint256 tradeId) external {
+        // Fetch the trade from the mapping
+        Trade storage trade = trades[tradeId];
 
-    // Check if the trade type is Sell
-    require(trade.tradeType == TradeType.Sell, "TradeType must be Sell");
+        // Check if the trade exists
+        require(trade.orderId != 0, "Trade does not exist");
 
-    // Check if the releaseCrypto function was called by the address that created the sellTrade and offerType is Buy
-    require(
-         msg.sender == trades[tradeId].sender &&
-        offers[trade.orderId].offerType == OfferType.Buy,
-        "ReleaseCrypto function not called by address that created the sellTrade or offerType is not Buy"
-    );
+        // Check if the trade type is Sell
+        require(trade.tradeType == TradeType.Sell, "TradeType must be Sell");
 
-    // Check if the crypto has been released
-    require(releasedCrypto, "Crypto has not been released");
+        // Check if the releaseCrypto function was called by the address that created the sellTrade and offerType is Buy
+        require(
+            msg.sender == trades[tradeId].sender &&
+                offers[trade.orderId].offerType == OfferType.Buy,
+            "ReleaseCrypto function not called by address that created the sellTrade or offerType is not Buy"
+        );
 
-    // Update the trade status to Completed
-    trade.status = TradeStatus.Completed;
+        // Check if the crypto has been released
+        require(releasedCrypto, "Crypto has not been released");
 
-    // Emit the TradeClosed event
-    emit TradeClosed(
-        tradeId,
-        trade.orderId,
-        trade.tradeType,
-        TradeStatus.Completed
-    );
-}
+        // Update the trade status to Completed
+        trade.status = TradeStatus.Completed;
 
+        // Emit the TradeClosed event
+        emit TradeClosed(
+            tradeId,
+            trade.orderId,
+            trade.tradeType,
+            TradeStatus.Completed
+        );
+    }
 
     // Function to get the current marketplace fee
     function getMarketplaceFee() external view returns (uint256) {
@@ -422,39 +428,44 @@ function closeBuyTrade(uint256 tradeId) external {
     }
 
     //withdraw function
-   function withdraw(address _token, uint256 quantity) external {
-    // Check if the sender is the creator of a sell trade and the trade status is active
-    if (msg.sender == createSellTrade.sender && createSellTrade.status == Status.Active) {
-        revert("Unauthorized access");
+    function withdraw(address _token, uint256 quantity) external {
+        // Check if the sender is the creator of a sell trade and the trade status is active
+        if (
+            msg.sender == createSellTrade.sender &&
+            createSellTrade.status == Status.Active
+        ) {
+            revert("Unauthorized access");
+        }
+        // Check if the sender is the creator of a sell offer and the account balance is equal to the minimum offer amount
+        else if (
+            msg.sender == createSellOffer.sender &&
+            accounts[msg.sender].balance >= createSellOffer.minAmount
+        ) {
+            revert("Unauthorized access");
+        } else {
+            // Ensure the user has enough tokens
+            require(
+                accounts[msg.sender].balance[_token] >= quantity,
+                "Insufficient balance"
+            );
+
+            // Subtract the amount from the user's balance
+            accounts[msg.sender].balance[_token] -= quantity;
+
+            // Transfer the tokens from this contract to the user
+            bool success = IERC20(_token).transfer(msg.sender, quantity);
+
+            // Ensure the transfer succeeded
+            require(success, "Token transfer failed");
+
+            // Emit the withdrawal event
+            emit Withdrawal(msg.sender, _token, quantity);
+        }
     }
-    // Check if the sender is the creator of a sell offer and the account balance is equal to the minimum offer amount
-    else if (msg.sender == createSellOffer.sender && accounts[msg.sender].balance >= createSellOffer.minAmount) {
-        revert("Unauthorized access");
-    }
-    else {
-        // Ensure the user has enough tokens
-        require(
-            accounts[msg.sender].balance[_token] >= quantity,
-            "Insufficient balance"
-        );
-
-        // Subtract the amount from the user's balance
-        accounts[msg.sender].balance[_token] -= quantity;
-
-        // Transfer the tokens from this contract to the user
-        bool success = IERC20(_token).transfer(msg.sender, quantity);
-
-        // Ensure the transfer succeeded
-        require(success, "Token transfer failed");
-
-        // Emit the withdrawal event
-        emit Withdrawal(msg.sender, _token, quantity);
-    }
-}
 
     function checkBalance(
         address _account,
-        address _token  
+        address _token
     ) external view returns (uint256) {
         // Return the balance of the account
         return accounts[_account].balance[_token];
@@ -490,7 +501,6 @@ function closeBuyTrade(uint256 tradeId) external {
         // Emit TransferCreated event after successful transfer
         emit TransferCreated(_token, _to, _quantity);
     }
-    
 
     function closeOffer(uint256 _offerId) external {
         // Checking if the offer exists
