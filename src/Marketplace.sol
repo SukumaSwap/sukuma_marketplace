@@ -51,6 +51,7 @@ contract Marketplace is
     // Functions
     function createAccount() external returns (uint256) {
         // Ensure account does not already exist
+        /////to check////
         require(
             accounts[msg.sender].walletAddress == address(0),
             "Account already exists"
@@ -169,6 +170,7 @@ contract Marketplace is
         require(offer.offerId == offerId, "OfferId does not exist");
 
         // Check if the token is the same as the offer token
+        //to check/////
         require(
             offer.token == msg.sender,
             "Token address must be the same as the offer token"
@@ -269,8 +271,14 @@ contract Marketplace is
         // Emit an event to indicate that the crypto has been released
         emit CryptoReleased(tradeId, receiver, quantity, token);
 
-        // Transfer the crypto to the receiver's address
-        IERC20(token).transfer(receiver, quantity);
+        // Transfer the crypto to the receiver's address/
+        // IERC20(token).transfer(receiver, quantity);
+        // Transfer the crypto to the receiver's address using the 'call' method
+(bool success, ) = address(token).call(abi.encodeWithSignature("transfer(address,uint256)", receiver, quantity));
+
+// Check if the 'call' was successful
+require(success, "Token transfer failed");
+
     }
 
     // Function to closeBuyTrade, can only be called by the creator of buyTrade
@@ -453,7 +461,10 @@ contract Marketplace is
             accounts[msg.sender].balance[_token] -= quantity;
 
             // Transfer the tokens from this contract to the user
-            bool success = IERC20(_token).transfer(msg.sender, quantity);
+            // bool success = IERC20(_token).transfer(msg.sender, quantity);
+
+(bool success, ) = _token.call(abi.encodeWithSignature("transfer(address,uint256)", msg.sender, quantity));
+
 
             // Ensure the transfer succeeded
             require(success, "Token transfer failed");
@@ -472,35 +483,39 @@ contract Marketplace is
     }
 
     //function to transfer crypto
-    function transfer(address _token, uint256 _quantity, address _to) external {
-        require(_quantity > 0, "Transfer quantity must be greater than zero");
-        require(_to != address(0), "Receiver address cannot be zero address");
+    // Function to transfer crypto using 'call' method
+function transfer(address _token, uint256 _quantity, address _to) external {
+    require(_quantity > 0, "Transfer quantity must be greater than zero");
+    require(_to != address(0), "Receiver address cannot be zero address");
 
-        // Ensure the user has enough tokens
-        require(
-            accounts[msg.sender].balance[_token] >= _quantity,
-            "Insufficient balance"
-        );
+    // Ensure the user has enough tokens
+    require(
+        accounts[msg.sender].balance[_token] >= _quantity,
+        "Insufficient balance"
+    );
 
-        // Subtract the amount from the user's balance
-        accounts[msg.sender].balance[_token] -= _quantity;
+    // Subtract the amount from the user's balance
+    accounts[msg.sender].balance[_token] -= _quantity;
 
-        // IERC20(_token) allows the contract to interact with the ERC20 token at address _token
-        IERC20 token = IERC20(_token);
+    // IERC20(_token) allows the contract to interact with the ERC20 token at address _token
+    IERC20 token = IERC20(_token);
 
-        // Transfers _quantity amount of tokens to address _to
-        // The contract must have enough tokens for the transfer to succeed
-        bool success = token.transfer(_to, _quantity);
+    // Encode the function call to the 'transfer' method of the ERC20 token contract
+    bytes memory data = abi.encodeWithSelector(token.transfer.selector, _to, _quantity);
 
-        // Ensure the transfer succeeded
-        require(success, "Token transfer failed");
+    // Use 'call' to execute the function call on the ERC20 token contract
+    (bool success, ) = address(_token).call(data);
 
-        // Update the balance of the receiver
-        accounts[_to].balance[_token] += _quantity;
+    // Ensure the 'call' was successful
+    require(success, "Token transfer failed");
 
-        // Emit TransferCreated event after successful transfer
-        emit TransferCreated(_token, _to, _quantity);
-    }
+    // Update the balance of the receiver
+    accounts[_to].balance[_token] += _quantity;
+
+    // Emit TransferCreated event after successful transfer
+    emit TransferCreated(_token, _to, _quantity);
+}
+
 
     function closeOffer(uint256 _offerId) external {
         // Checking if the offer exists
