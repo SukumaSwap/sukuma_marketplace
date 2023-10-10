@@ -1,19 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // This specifies the license under which the contract's code is released.
 pragma solidity ^0.8.20; // Specify the Solidity compiler version.
-
-// import "./SafeMath.sol";  // Import the SafeMath library.
-
-//old wrong one
-// import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";  // Import the Chainlink Price Feed interface.
-
-// installed path
-// import lib/foundry-chainlink-toolkit
-
-import {LinkToken} from "foundry-chainlink-toolkit/chainlink/contracts";
+import "@chainlink/v0.8/interfaces/AggregatorV3Interface.sol";  // Import the Chainlink Price Feed interface.
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Pricefeed {
-    using SafeMath for uint256; // Use the SafeMath library for safe mathematical operations.
+   
     mapping(string => address) private priceFeeds; // Mapping to store currency symbol => Price Feed address.
 
     // This function calculates the price of a given quantity of a token in a specific currency.
@@ -23,13 +15,16 @@ contract Pricefeed {
         string memory _currency
     ) public view returns (uint256) {
         // Get the latest price from Chainlink price feed for the specified currency.
-        (, int256 price, , , ) = getLatestPrice(_currency);
+        AggregatorV3Interface priceFeed = getLatestPrice(_currency);
 
         // Get the decimals of the token.
         uint8 decimals = ERC20(_tokenAddress).decimals();
 
+        // Retrieve the latest price data
+        (uint256 price, , , , ) = priceFeed.latestRoundData();
+
         // Calculate the price in USD.
-        uint256 priceInUSD = (uint256(price) * _quantity) / (10 ** decimals);
+        uint256 priceInUSD = uint256(price) * _quantity / (10**uint256(decimals));
 
         // Convert the price to the required currency.
         uint256 convertedPrice = convertCurrency(priceInUSD, "USD", _currency);
