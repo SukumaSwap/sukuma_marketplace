@@ -6,7 +6,7 @@ import "@openzeppelin-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "@openzeppelin-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
 // import "@foundry-chainlink-toolkit/upgradeable/contracts/access/OwnableUpgradeable.sol"
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
+import "@openzeppelin-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol";
 
 import {IMarketplace} from "@contracts/IMarketplace.sol";
 
@@ -18,6 +18,7 @@ contract Marketplace is
     IMarketplace,
     Pricefeed
 {
+using SafeMathUpgradeable for uint256;
     // Variables
     uint256 private marketplaceFee;
     //variable to count trades
@@ -189,6 +190,7 @@ contract Marketplace is
             offer.token,
             "USD"
         );
+
         uint256 tradeAmount = convertedPrice.mul(100 + rate).div(100);
 
         // Autogenerate tradeId
@@ -238,7 +240,7 @@ contract Marketplace is
 
         // Check if the parameters match the trade or offer
         require(
-            receiver == trades[tradeId].receiver,
+            Trade.receiver == trades[tradeId].receiver,
             "Receiver address does not match the trade"
         );
         require(
@@ -266,14 +268,14 @@ contract Marketplace is
         releasedCrypto = true;
 
         // Add the trade to accountToTrades mapping
-        accountToTrades[trades[tradeId].sender].push(trades[tradeId]);
-        accountToTrades[receiver].push(trades[tradeId]);
+        accountToTrades[trades[tradeId].sender].push(trades[tradeId]);//add trade to senders account
+        accountToTrades[Trade.receiver].push(trades[tradeId]);// add trade to receivers account
 
         // Emit an event to indicate that the crypto has been released
-        emit CryptoReleased(tradeId, receiver, quantity, token);
+        emit CryptoReleased(tradeId, Trade.receiver, quantity, token);
 
         // Transfer the crypto to the receiver's address/
-        IERC20(token).transfer(receiver, quantity);
+        IERC20(token).transfer(Trade.receiver, quantity);
        
     }
 
@@ -311,7 +313,7 @@ contract Marketplace is
     }
 
     //function to createSell
-    function createSellTrade(uint256 offerId, uint256 quantity) external {
+    function createSellTrade(uint256 offerId, uint256 quantity) public {
         // Input validators
         require(quantity > 0, "Quantity must be greater than zero");
 
@@ -436,14 +438,15 @@ contract Marketplace is
         // Check if the sender is the creator of a sell trade and the trade status is active
         if (
             msg.sender == createSellTrade.sender &&
-            createSellTrade.status == Status.Active
+            createSellTrade.status == TradeStatus.Active
         ) {
             revert("Unauthorized access");
         }
         // Check if the sender is the creator of a sell offer and the account balance is equal to the minimum offer amount
         else if (
-            msg.sender == createSellOffer.sender &&
-            accounts[msg.sender].balance >= createSellOffer.minAmount
+            msg.sender == Offer.owner && OfferType.Sell  //confirms if the one whocal withdraw ,is the same one whocaled createOffer
+            &&
+            accounts[msg.sender].balance >= Offer.min
         ) {
             revert("Unauthorized access");
         } else {

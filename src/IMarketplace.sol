@@ -46,7 +46,7 @@ interface IMarketplace {
         address sender;
         address token;
         TradeType tradeType;
-        uint64 amount;
+        uint256 amount;
     }
 
     struct Transfer {
