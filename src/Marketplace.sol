@@ -223,9 +223,10 @@ using SafeMathUpgradeable for uint256;
         emit TradeCreated(tradeId, offerId, TradeType.Buy, TradeStatus.Active);
     }
 
-    //function releaseCrypto
+    //function releaseCrypto only called by user that created a SellOffer || sellTrade
     function releaseCrypto(uint256 tradeId) external {
         // Fetch the required parameters from the createBuyTrade function
+        address receiver = trades[tradeId].receiver;
         uint256 quantity = trades[tradeId].quantity;
         address token = trades[tradeId].token;
         uint256 offerId = trades[tradeId].orderId;
@@ -239,10 +240,11 @@ using SafeMathUpgradeable for uint256;
         );
 
         // Check if the parameters match the trade or offer
-        require(
-            Trade.receiver == trades[tradeId].receiver,
-            "Receiver address does not match the trade"
-        );
+     require(
+    trades[tradeId].receiver == trades[tradeId].receiver,
+    "Receiver address does not match the trade"
+);
+
         require(
             quantity == trades[tradeId].quantity,
             "Quantity does not match the trade"
@@ -269,13 +271,13 @@ using SafeMathUpgradeable for uint256;
 
         // Add the trade to accountToTrades mapping
         accountToTrades[trades[tradeId].sender].push(trades[tradeId]);//add trade to senders account
-        accountToTrades[Trade.receiver].push(trades[tradeId]);// add trade to receivers account
+        accountToTrades[receiver].push(trades[tradeId]);// add trade to receivers account
 
         // Emit an event to indicate that the crypto has been released
-        emit CryptoReleased(tradeId, Trade.receiver, quantity, token);
+        emit CryptoReleased(tradeId, receiver, quantity, token);
 
         // Transfer the crypto to the receiver's address/
-        IERC20(token).transfer(Trade.receiver, quantity);
+        IERC20(token).transfer(receiver, quantity);
        
     }
 
