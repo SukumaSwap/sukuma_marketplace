@@ -435,12 +435,16 @@ using SafeMathUpgradeable for uint256;
         emit Deposit(_token, msg.sender, _amount);
     }
 
-    //withdraw function
+    //withdraw function: restricts 2 kinds of users 1. Creator of SellTrade and Trade is active .. 2.
     function withdraw(address _token, uint256 quantity) external {
         // Check if the sender is the creator of a sell trade and the trade status is active
         if (
-            msg.sender == createSellTrade.sender &&
-            createSellTrade.status == TradeStatus.Active
+            msg.sender == trades[tradeId].sender 
+            &&
+            trades[tradeId].TradeType==TradeType.Sell 
+             &&
+            trades[tradeId].TradeStatus== TradeStatus.Active
+           
         ) {
             revert("Unauthorized access");
         }
